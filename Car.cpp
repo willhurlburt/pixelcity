@@ -16,11 +16,18 @@
 #define MOVEMENT_SPEED  0.61f
 #define CAR_SIZE        3.0f
 
+#ifdef WINDOWS
 #include <windows.h>
+#endif
+
 #include <math.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+
+#if defined(WINDOWS) && _MSC_VER <= 1200
 #include <GL/glaux.h>
+#endif
+
 #include "glTypes.h"
 
 #include "building.h"

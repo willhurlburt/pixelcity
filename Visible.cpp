@@ -14,8 +14,10 @@
 
 -----------------------------------------------------------------------------*/
 
-
+#ifdef WINDOWS
 #include <windows.h>
+#endif
+
 #include <math.h>
 
 #include "glTypes.h"

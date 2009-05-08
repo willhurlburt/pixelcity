@@ -16,11 +16,18 @@
 
 #define MAX_SIZE            5
 
+#ifdef WINDOWS
 #include <windows.h>
+#endif
+
 #include <math.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+
+#if defined(WINDOWS) && _MSC_VER <= 1200
 #include <GL/glaux.h>
+#endif
+
 #include "glTypes.h"
 
 #include "camera.h"

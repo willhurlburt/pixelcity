@@ -14,7 +14,10 @@
 
 -----------------------------------------------------------------------------*/
 
+#ifdef WINDOWS
 #include <windows.h>
+#endif
+
 #include <math.h>
 #include <GL/gl.h>
 

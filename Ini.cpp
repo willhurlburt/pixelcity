@@ -17,7 +17,10 @@
 #define INI_FILE            ".\\" APP ".ini"
 #define SECTION             "Settings"
 
+#ifdef WINDOWS
 #include <windows.h>
+#endif
+
 #include <stdio.h>
 #include "glTypes.h"
 

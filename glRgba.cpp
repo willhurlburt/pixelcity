@@ -10,7 +10,10 @@
 
 -----------------------------------------------------------------------------*/
 
+#ifdef WINDOWS
 #include <windows.h>
+#endif
+
 #include <stdio.h>
 #include <GL/gl.h>
 #include <math.h>

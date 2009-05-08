@@ -23,12 +23,18 @@
 #define SUFFIX_COUNT        (sizeof (suffix) / sizeof (char*))
 #define NAME_COUNT          (sizeof (name) / sizeof (char*))
 
+#ifdef WINDOWS
 #include <windows.h>
+#endif
+
 #include <stdio.h>
 #include <math.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+
+#if defined(WINDOWS) && _MSC_VER <= 1200
 #include <GL/glaux.h>
+#endif
 
 #include "gltypes.h"
 #include "building.h"

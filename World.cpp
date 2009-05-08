@@ -15,10 +15,17 @@
 #define HUE_COUNT         (sizeof(hue_list)/sizeof(float))
 #define LIGHT_COLOR_COUNT (sizeof(light_colors)/sizeof(HSL))
 
+#ifdef WINDOWS
 #include <windows.h>
+#endif
+
 #include <GL/gl.h>
 #include <GL/glu.h>
+
+#if defined(WINDOWS) && _MSC_VER <= 1200
 #include <GL/glaux.h>
+#endif
+
 #include <math.h>
 #include <time.h>
 

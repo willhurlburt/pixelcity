@@ -12,13 +12,19 @@
 
 #define MOUSE_MOVEMENT          0.5f
 
+#ifdef WINDOWS
 #include <windows.h>
+#endif
+
 #include <math.h>
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
+
+#ifdef WINDOWS
 #include <scrnsave.h>
+#endif
 
 #include "camera.h"
 #include "car.h"

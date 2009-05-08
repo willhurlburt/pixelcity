@@ -22,7 +22,10 @@
 #define FONT_SIZE           (LOGO_PIXELS - LOGO_PIXELS / 8)
 #define BLOOM_SCALING       0.07f
 
+#ifdef WINDOWS
 #include <windows.h>
+#endif
+
 #include <stdio.h>
 #include <time.h>
 #include <stdarg.h>
