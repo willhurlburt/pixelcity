@@ -24,8 +24,8 @@
 #include <stdio.h>
 #include "glTypes.h"
 
-#include "ini.h"
-#include "win.h"
+#include "Ini.h"
+#include "Win.h"
 
 static char                 result[MAX_RESULT];
 

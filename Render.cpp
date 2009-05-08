@@ -34,19 +34,19 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#include "gltypes.h"
-#include "entity.h"
-#include "car.h"
-#include "camera.h"
-#include "ini.h"
-#include "light.h"
-#include "macro.h"
-#include "math.h"
-#include "render.h"
-#include "sky.h"
-#include "texture.h"
-#include "world.h"
-#include "win.h"
+#include "glTypes.h"
+#include "Entity.h"
+#include "Car.h"
+#include "Camera.h"
+#include "Ini.h"
+#include "Light.h"
+#include "Macro.h"
+#include "Math.h"
+#include "Render.h"
+#include "Sky.h"
+#include "Texture.h"
+#include "World.h"
+#include "Win.h"
 
 static	PIXELFORMATDESCRIPTOR pfd =			
 {

@@ -18,7 +18,7 @@
 #include <math.h>
 #include <GL/gl.h>
 
-#include "math.h"
+#include "Math.h"
 #include "glTypes.h"
 
 enum QuatPart {X, Y, Z, W};

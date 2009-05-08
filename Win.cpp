@@ -26,18 +26,18 @@
 #include <scrnsave.h>
 #endif
 
-#include "camera.h"
-#include "car.h"
-#include "entity.h"
+#include "Camera.h"
+#include "Car.h"
+#include "Entity.h"
 #include "glTypes.h"
-#include "ini.h"
-#include "macro.h"
-#include "random.h"
-#include "render.h"
-#include "texture.h"
-#include "win.h"
-#include "world.h"
-#include "visible.h"
+#include "Ini.h"
+#include "Macro.h"
+#include "Random.h"
+#include "Render.h"
+#include "Texture.h"
+#include "Win.h"
+#include "World.h"
+#include "Visible.h"
 
 #pragma comment (lib, "opengl32.lib")
 #pragma comment (lib, "winmm.lib")

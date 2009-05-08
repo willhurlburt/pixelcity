@@ -77,7 +77,7 @@
 #include <math.h>
 #include <float.h>
 
-#include "macro.h"
+#include "Macro.h"
 #include "glTypes.h"
 
 static float      identity[4][4] = 

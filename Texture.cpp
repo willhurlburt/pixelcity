@@ -36,18 +36,18 @@
 #include <GL/glaux.h>
 #endif
 
-#include "gltypes.h"
-#include "building.h"
-#include "camera.h"
-#include "car.h"
-#include "light.h"
-#include "macro.h"
-#include "random.h"
-#include "render.h"
-#include "sky.h"
-#include "texture.h"
-#include "world.h"
-#include "win.h"
+#include "glTypes.h"
+#include "Building.h"
+#include "Camera.h"
+#include "Car.h"
+#include "Light.h"
+#include "Macro.h"
+#include "Random.h"
+#include "Render.h"
+#include "Sky.h"
+#include "Texture.h"
+#include "World.h"
+#include "Win.h"
 
 static char*        prefix[] = 
 {

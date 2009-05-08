@@ -27,16 +27,16 @@
 
 #include "glTypes.h"
 
-#include "deco.h"
-#include "light.h"
-#include "mesh.h"
-#include "macro.h"
-#include "math.h"
-#include "random.h"
-#include "render.h"
-#include "texture.h"
-#include "world.h"
-#include "visible.h"
+#include "Deco.h"
+#include "Light.h"
+#include "Mesh.h"
+#include "Macro.h"
+#include "Math.h"
+#include "Random.h"
+#include "Render.h"
+#include "Texture.h"
+#include "World.h"
+#include "Visible.h"
 
 
 /*-----------------------------------------------------------------------------

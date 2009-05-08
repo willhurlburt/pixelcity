@@ -29,11 +29,11 @@
 #include <time.h>
 
 #include "glTypes.h"
-#include "ini.h"
-#include "macro.h"
-#include "math.h"
-#include "world.h"
-#include "win.h"
+#include "Ini.h"
+#include "Macro.h"
+#include "Math.h"
+#include "World.h"
+#include "Win.h"
 
 
 enum

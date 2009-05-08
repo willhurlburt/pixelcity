@@ -20,16 +20,16 @@
 #include <GL/gl.h>
 #include "glTypes.h"
 
-#include "building.h"
-#include "deco.h"
-#include "light.h"
-#include "mesh.h"
-#include "macro.h"
-#include "math.h"
-#include "random.h"
-#include "texture.h"
-#include "world.h"
-#include "win.h"
+#include "Building.h"
+#include "Deco.h"
+#include "Light.h"
+#include "Mesh.h"
+#include "Macro.h"
+#include "Math.h"
+#include "Random.h"
+#include "Texture.h"
+#include "World.h"
+#include "Win.h"
 
 //This is used by the recursive roof builder to decide what items may be added.
 enum

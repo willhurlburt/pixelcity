@@ -18,8 +18,8 @@
 #include <math.h>
 #include <GL/gl.h>
 
-#include "macro.h"
-#include "math.h"
+#include "Macro.h"
+#include "Math.h"
 #include "glTypes.h"
 
 /*-----------------------------------------------------------------------------

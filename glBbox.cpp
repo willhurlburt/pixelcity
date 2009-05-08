@@ -15,7 +15,7 @@
 
 #include <math.h>
 
-#include "macro.h"
+#include "Macro.h"
 #include "glTypes.h"
 
 /*-----------------------------------------------------------------------------
