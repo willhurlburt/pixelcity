@@ -21,6 +21,9 @@
 #include <math.h>
 #include <GL/gl.h>
 
+#include <vector>
+#include <algorithm>
+
 #include "Camera.h"
 #include "Entity.h"
 #include "Macro.h"
@@ -35,6 +38,19 @@
 struct entity
 {
   CEntity*            object;
+
+  entity() : object(NULL) {};
+  entity(CEntity* o) : object(o) {};
+  ~entity() {delete object;};
+
+  bool operator<(const entity& rhs) const {
+    if (this->object->Alpha () && !rhs.object->Alpha ())
+      return true;
+    if (!this->object->Alpha () && rhs.object->Alpha ())
+      return false;
+
+    return this->object->Texture () < rhs.object->Texture ();
+  };
 };
 
 
@@ -47,21 +63,20 @@ struct cell
   GLvector        pos;
 };
 
-static cell           cell_list[GRID_SIZE][GRID_SIZE];
-static int            entity_count;
-static entity*        entity_list;
-static bool           sorted;
-static bool           compiled;
-static int            polycount;
-static int            compile_x;
-static int            compile_y;
-static int            compile_count;
+static cell                cell_list[GRID_SIZE][GRID_SIZE];
+static std::vector<entity> entity_list;
+static bool                sorted;
+static bool                compiled;
+static int                 polycount;
+static int                 compile_x;
+static int                 compile_y;
+static int                 compile_count;
 
 /*-----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------*/
 
-static int do_compare (const void *arg1, const void *arg2 )
+/*static int do_compare (const void *arg1, const void *arg2 )
 {
 
   struct entity*  e1 = (struct entity*)arg1;
@@ -77,7 +92,7 @@ static int do_compare (const void *arg1, const void *arg2 )
     return -1;
   return 0;
 
-}
+}*/
 
 /*-----------------------------------------------------------------------------
 
@@ -86,9 +101,7 @@ static int do_compare (const void *arg1, const void *arg2 )
 void add (CEntity* b)
 {
 
-  entity_list = (entity*)realloc (entity_list, sizeof (entity) * (entity_count + 1));
-  entity_list[entity_count].object = b;
-  entity_count++;
+  entity_list.push_back(entity(b));
   polycount = 0;
 
 }
@@ -100,8 +113,8 @@ void add (CEntity* b)
 static void do_compile ()
 {
 
-  int       i;
-  int       x, y;
+  std::vector<entity>::iterator i;
+  int                           x, y;
 
   if (compiled)
     return;
@@ -117,11 +130,11 @@ static void do_compile ()
     cell_list[x][y].list_textured = glGenLists(1);
   glNewList (cell_list[x][y].list_textured, GL_COMPILE);
   cell_list[x][y].pos = glVector (GRID_TO_WORLD(x), 0.0f, (float)y * GRID_RESOLUTION);
-  for (i = 0; i < entity_count; i++) {
-    GLvector pos = entity_list[i].object->Center ();
-    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && !entity_list[i].object->Alpha ()) {
-      glBindTexture(GL_TEXTURE_2D, entity_list[i].object->Texture ());
-      entity_list[i].object->Render ();
+  for (i = entity_list.begin(); i < entity_list.end(); ++i) {
+    GLvector pos = i->object->Center ();
+    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && !i->object->Alpha ()) {
+      glBindTexture(GL_TEXTURE_2D, i->object->Texture ());
+      i->object->Render ();
     }
   }
   glEndList();	
@@ -132,10 +145,10 @@ static void do_compile ()
   glNewList (cell_list[x][y].list_flat, GL_COMPILE);
   glEnable (GL_CULL_FACE);
   cell_list[x][y].pos = glVector (GRID_TO_WORLD(x), 0.0f, (float)y * GRID_RESOLUTION);
-  for (i = 0; i < entity_count; i++) {
-    GLvector pos = entity_list[i].object->Center ();
-    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && !entity_list[i].object->Alpha ()) {
-      entity_list[i].object->RenderFlat (false);
+  for (i = entity_list.begin(); i < entity_list.end(); ++i) {
+    GLvector pos = i->object->Center ();
+    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && !i->object->Alpha ()) {
+      i->object->RenderFlat (false);
     }
   }
   glEndList();	
@@ -145,10 +158,10 @@ static void do_compile ()
   glNewList (cell_list[x][y].list_flat_wireframe, GL_COMPILE);
   glEnable (GL_CULL_FACE);
   cell_list[x][y].pos = glVector (GRID_TO_WORLD(x), 0.0f, (float)y * GRID_RESOLUTION);
-  for (i = 0; i < entity_count; i++) {
-    GLvector pos = entity_list[i].object->Center ();
-    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && !entity_list[i].object->Alpha ()) {
-      entity_list[i].object->RenderFlat (true);
+  for (i = entity_list.begin(); i < entity_list.end(); ++i) {
+    GLvector pos = i->object->Center ();
+    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && !i->object->Alpha ()) {
+      i->object->RenderFlat (true);
     }
   }
   glEndList();	
@@ -160,11 +173,11 @@ static void do_compile ()
   glDepthMask (false);
   glEnable (GL_BLEND);
   glDisable (GL_CULL_FACE);
-  for (i = 0; i < entity_count; i++) {
-    GLvector pos = entity_list[i].object->Center ();
-    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && entity_list[i].object->Alpha ()) {
-      glBindTexture(GL_TEXTURE_2D, entity_list[i].object->Texture ());
-      entity_list[i].object->Render ();
+  for (i = entity_list.begin(); i < entity_list.end(); ++i) {
+    GLvector pos = i->object->Center ();
+    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && i->object->Alpha ()) {
+      glBindTexture(GL_TEXTURE_2D, i->object->Texture ());
+      i->object->Render ();
     }
   }
   glDepthMask (true);
@@ -214,14 +227,14 @@ float EntityProgress ()
 void EntityUpdate ()
 {
 
-  unsigned    stop_time;
+  int stop_time;
 
   if (!TextureReady ()) {
     sorted = false;
     return;
   } 
   if (!sorted) {
-    qsort (entity_list, entity_count, sizeof (struct entity), do_compare);
+    std::sort (entity_list.begin(), entity_list.end());
     sorted = true;
   }
   //We want to do several cells at once. Enough to get things done, but
@@ -291,13 +304,7 @@ void EntityRender ()
 void EntityClear ()
 {
 
-  for (int i = 0; i < entity_count; i++) {
-    delete entity_list[i].object;
-  }
-  if (entity_list)
-    free (entity_list);
-  entity_list = NULL;
-  entity_count = 0;
+  entity_list.resize(0);
   compile_x = 0;
   compile_y = 0;
   compile_count = 0;
@@ -329,7 +336,7 @@ void EntityClear ()
 int EntityCount ()
 {
 
-  return entity_count;
+  return entity_list.size();
 
 }
 
@@ -353,8 +360,8 @@ int EntityPolyCount (void)
     return 0;
   if (polycount)
     return polycount;
-  for (int i = 0; i < entity_count; i++) 
-    polycount += entity_list[i].object->PolyCount ();
+  for (std::vector<entity>::iterator i = entity_list.begin(); i < entity_list.end(); ++i) 
+    polycount += i->object->PolyCount ();
   return polycount;
 
 }
