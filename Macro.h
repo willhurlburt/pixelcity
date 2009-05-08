@@ -1,6 +1,6 @@
 #include "time_util.h"
 
-#define LIMIT_INTERVAL(interval)  { static unsigned next_update; if (next_update > GetTimeInMillis ()) return; next_update = GetTimeInMillis () + interval;}
+#define LIMIT_INTERVAL(interval)  { static int next_update; if (next_update > GetTimeInMillis ()) return; next_update = GetTimeInMillis () + interval;}
 #define DEGREES_TO_RADIANS        .017453292F
 #define RADIANS_TO_DEGREES        57.29577951F
 #define PI                        ((double)3.1415926535F)

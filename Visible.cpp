@@ -19,6 +19,7 @@
 #endif
 
 #include <math.h>
+#include <string.h>
 
 #include "glTypes.h"
 #include "Camera.h"
@@ -72,7 +73,7 @@ void VisibleUpdate (void)
 
   LIMIT_INTERVAL (10);
   //Clear the visibility table
-  ZeroMemory (vis_grid, sizeof (vis_grid));
+  memset (vis_grid, 0, sizeof (vis_grid));
   //Calculate which cell the camera is in
   angle = CameraAngle ();
   position = CameraPosition ();

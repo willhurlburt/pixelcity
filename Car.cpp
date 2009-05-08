@@ -23,6 +23,7 @@
 #include <math.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <string.h>
 
 #if defined(WINDOWS) && _MSC_VER <= 1200
 #include <GL/glaux.h>
@@ -83,7 +84,7 @@ void CarClear ()
 
   for (c = head; c; c = c->m_next)
     c->Park ();
-  ZeroMemory (carmap, sizeof (carmap));
+  memset (carmap, 0, sizeof (carmap));
   count = 0;
 
 }

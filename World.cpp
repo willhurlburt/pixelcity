@@ -27,6 +27,8 @@
 #endif
 
 #include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
 #include "glTypes.h"
@@ -427,7 +429,7 @@ static void do_reset (void)
   //Pick a tint for the bloom 
   bloom_color = get_light_color(0.5f + (float)RandomVal (10) / 20.0f, 0.75f);
   light_color = glRgbaFromHsl (0.11f, 1.0f, 0.65f);
-  ZeroMemory (world, WORLD_SIZE * WORLD_SIZE);
+  memset (world, 0, WORLD_SIZE * WORLD_SIZE);
   for (y = WORLD_EDGE; y < WORLD_SIZE - WORLD_EDGE; y += RandomVal (25) + 25) {
     if (!broadway_done && y > WORLD_HALF - 20) {
       build_road (0, y, WORLD_SIZE, 19);

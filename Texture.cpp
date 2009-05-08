@@ -28,7 +28,9 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
+#include <string.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
 
@@ -512,7 +514,7 @@ void CTexture::Rebuild ()
     
     //memset (buffer, 0, 1024 * 1024 * 4);
     bits = new unsigned char[_size * _size * 4];
-    ZeroMemory (bits, sizeof (bits));
+    memset (bits, 0, sizeof (bits));
     icolor[3] = 255;
     for (x = 0; x < _size; x++) {
       for (y = 0; y < _size; y++) {
@@ -544,7 +546,7 @@ void CTexture::Rebuild ()
 
 	  glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, _size, _size, 0, GL_RGBA, GL_UNSIGNED_BYTE, bits);
     use_framebuffer = false;
-    delete bits;
+    delete[] bits;
     break;
   case TEXTURE_LATTICE:
     glLineWidth (2.0f);
@@ -752,10 +754,10 @@ void CTexture::Rebuild ()
 	  glCopyTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, 0, 0, _size, _size, 0);
   }
   if (_mipmap) {
-    bits = (unsigned char*)malloc (_size * _size * 4);
+    bits = new unsigned char[_size * _size * 4];
     glGetTexImage (GL_TEXTURE_2D,	0, GL_RGBA, GL_UNSIGNED_BYTE, bits);
     gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, _size, _size, GL_RGBA, GL_UNSIGNED_BYTE, bits);
-    free (bits);
+    delete[] bits;
 	  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR_MIPMAP_LINEAR);
 	  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
   } else
@@ -813,9 +815,9 @@ void TextureReset (void)
   sat = 0.1f + (float)RandomVal (80) / 100.0f;
   horizon_color = glRgbaFromHsl (hue, sat, 0.15f);
   cloud_color  = glRgbaFromHsl (hue, 0.15f, 0.1f);
-  ZeroMemory (prefix_used, sizeof (prefix_used));
-  ZeroMemory (name_used, sizeof (name_used));
-  ZeroMemory (suffix_used, sizeof (suffix_used));
+  memset (prefix_used, 0, sizeof (prefix_used));
+  memset (name_used, 0, sizeof (name_used));
+  memset (suffix_used, 0, sizeof (suffix_used));
 
 }
 
@@ -870,7 +872,7 @@ void TextureTerm (void)
 
   while (head) {
     t = head->_next;
-    free (head);
+    delete head;
     head = t;
   }
 
