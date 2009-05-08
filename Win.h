@@ -1,3 +1,10 @@
+#ifdef WINDOWS
+#include <windows.h>
+#else
+#include <X11/Xlib.h>
+typedef Window HWND;
+#endif
+
 //Versioning info
 #define APP_TITLE           "PixelCity"
 #define APP                 "pixelcity"

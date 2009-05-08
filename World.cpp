@@ -45,6 +45,7 @@
 #include "Visible.h"
 #include "Win.h"
 #include "World.h"
+#include "time_util.h"
 
 struct plot
 {
@@ -645,7 +646,7 @@ void WorldReset (void)
   //If reset is called but the world isn't ready, then don't bother fading out.
   //The program probably just started.
   fade_state = FADE_OUT;
-  fade_start = GetTickCount ();
+  fade_start = GetTimeInMillis ();
 
 }
 
@@ -699,7 +700,7 @@ void WorldUpdate (void)
   unsigned      fade_delta;
   unsigned      now, elapsed;
 
-  now = GetTickCount ();
+  now = GetTimeInMillis ();
   if (reset_needed) {
     do_reset (); //Now we've faded out the scene, rebuild it
   }
@@ -748,7 +749,7 @@ void WorldUpdate (void)
 void WorldInit (void)
 {
 
-  last_update = GetTickCount ();
+  last_update = GetTimeInMillis ();
   for (int i = 0; i < CARS; i++)
     new CCar ();
   sky = new CSky ();

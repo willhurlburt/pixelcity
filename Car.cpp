@@ -42,6 +42,7 @@
 #include "World.h"
 #include "Visible.h"
 #include "Win.h"
+#include "time_util.h"
 
 static GLvector           direction[] = 
 {
@@ -127,7 +128,7 @@ void CarUpdate ()
 
   if (!TextureReady () || !EntityReady ())
     return;
-  now = GetTickCount ();
+  now = GetTimeInMillis ();
   if (next_update > now)
     return;
   next_update = now + UPDATE_INTERVAL;

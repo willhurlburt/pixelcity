@@ -47,6 +47,7 @@
 #include "Texture.h"
 #include "World.h"
 #include "Win.h"
+#include "time_util.h"
 
 static	PIXELFORMATDESCRIPTOR pfd =			
 {
@@ -272,10 +273,10 @@ static void do_effects (int type)
     break;
   case EFFECT_COLOR_CYCLE:
     //Oooh. Pretty colors.  Tint the scene according to screenspace.
-    hue1 = (float)(GetTickCount () % COLOR_CYCLE_TIME) / COLOR_CYCLE_TIME;
-    hue2 = (float)((GetTickCount () + COLOR_CYCLE) % COLOR_CYCLE_TIME) / COLOR_CYCLE_TIME;
-    hue3 = (float)((GetTickCount () + COLOR_CYCLE * 2) % COLOR_CYCLE_TIME) / COLOR_CYCLE_TIME;
-    hue4 = (float)((GetTickCount () + COLOR_CYCLE * 3) % COLOR_CYCLE_TIME) / COLOR_CYCLE_TIME;
+    hue1 = (float)(GetTimeInMillis () % COLOR_CYCLE_TIME) / COLOR_CYCLE_TIME;
+    hue2 = (float)((GetTimeInMillis () + COLOR_CYCLE) % COLOR_CYCLE_TIME) / COLOR_CYCLE_TIME;
+    hue3 = (float)((GetTimeInMillis () + COLOR_CYCLE * 2) % COLOR_CYCLE_TIME) / COLOR_CYCLE_TIME;
+    hue4 = (float)((GetTimeInMillis () + COLOR_CYCLE * 3) % COLOR_CYCLE_TIME) / COLOR_CYCLE_TIME;
     glBindTexture(GL_TEXTURE_2D, 0);
     glEnable (GL_BLEND);
     glBlendFunc (GL_ONE, GL_ONE);

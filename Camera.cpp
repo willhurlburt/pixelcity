@@ -34,6 +34,7 @@
 #include "Math.h"
 #include "World.h"
 #include "Win.h"
+#include "time_util.h"
 
 
 enum
@@ -115,7 +116,7 @@ static void do_auto_cam ()
   int       behavior; 
   GLvector  target;
 
-  now = GetTickCount ();
+  now = GetTimeInMillis ();
   elapsed = now - last_update;
   elapsed = MIN (elapsed, 50); //limit to 1/20th second worth of time
   if (elapsed == 0)
@@ -262,7 +263,7 @@ void CameraVertical (float val)
 {
 
   movement.y += val;
-  last_move = GetTickCount ();
+  last_move = GetTimeInMillis ();
 
 }
 
@@ -274,7 +275,7 @@ void CameraLateral (float val)
 {
 
   movement.x += val;
-  last_move = GetTickCount ();
+  last_move = GetTimeInMillis ();
 
 }
 
@@ -286,7 +287,7 @@ void CameraMedial (float val)
 {
 
   movement.z += val;
-  last_move = GetTickCount ();
+  last_move = GetTimeInMillis ();
 
 }
 
@@ -377,7 +378,7 @@ void CameraUpdate (void)
   CameraPan (movement.x);
   CameraForward (movement.z);
   position.y += movement.y / 10.0f;
-  if (GetTickCount () - last_move > 1000)
+  if (GetTimeInMillis () - last_move > 1000)
     movement *= 0.9f;
   else
     movement *= 0.99f;

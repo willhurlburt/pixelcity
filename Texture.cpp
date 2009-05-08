@@ -48,6 +48,7 @@
 #include "Texture.h"
 #include "World.h"
 #include "Win.h"
+#include "time_util.h"
 
 static char*        prefix[] = 
 {
@@ -472,7 +473,7 @@ void CTexture::Rebuild ()
   unsigned        start;
   int             lapsed;
 
-  start = GetTickCount ();
+  start = GetTimeInMillis ();
   glBindTexture(GL_TEXTURE_2D, _glid);
 	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, _size, _size, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -762,7 +763,7 @@ void CTexture::Rebuild ()
   //cleanup and restore the viewport
   RenderResize ();  
   _ready = true;
-  lapsed = GetTickCount () - start;
+  lapsed = GetTimeInMillis () - start;
   build_time += lapsed;
     
 

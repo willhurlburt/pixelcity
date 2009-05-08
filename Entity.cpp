@@ -30,6 +30,7 @@
 #include "World.h"
 #include "Visible.h"
 #include "Win.h"
+#include "time_util.h"
 
 struct entity
 {
@@ -225,8 +226,8 @@ void EntityUpdate ()
   }
   //We want to do several cells at once. Enough to get things done, but
   //not so many that the program is unresponsive.
-  stop_time = GetTickCount () + 100;
-  while (!compiled && GetTickCount () < stop_time)
+  stop_time = GetTimeInMillis () + 100;
+  while (!compiled && GetTimeInMillis () < stop_time)
     do_compile ();
 
 }

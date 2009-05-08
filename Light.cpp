@@ -38,6 +38,7 @@
 #include "Render.h"
 #include "Texture.h"
 #include "Visible.h"
+#include "time_util.h"
 
 static GLvector2      angles[5][360];
 static CLight*        head;
@@ -162,7 +163,7 @@ void CLight::Render ()
     return;
   if (fabs (camera_position.z - _position.z) > RenderFogDistance ())
     return;
-  if (_blink && (GetTickCount () % _blink_interval) > 200)
+  if (_blink && (GetTimeInMillis () % _blink_interval) > 200)
     return;
   angle = (int)MathAngle (camera.y);
   offset = angles[_size][angle];
