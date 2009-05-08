@@ -13,7 +13,7 @@ class CDeco : CEntity
 public:
 
                 CDeco ();
-                ~CDeco ();
+  virtual       ~CDeco ();
   void          CreateLogo (GLvector2 start, GLvector2 end, float base, int seed, GLrgba color);
   void          CreateLightStrip (float x, float z, float width, float depth, float height, GLrgba color);
   void          CreateLightTrim (GLvector* chain, int count, float height, int seed, GLrgba color);

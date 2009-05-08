@@ -15,6 +15,7 @@ protected:
 
 public:
                           CEntity (void);
+  virtual                 ~CEntity () {};
   GLvector                Center () { return _center; }
   virtual void            Render (void);
   virtual void            RenderFlat (bool wirefame);

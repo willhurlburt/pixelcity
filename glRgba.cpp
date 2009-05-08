@@ -163,10 +163,10 @@ GLrgba glRgbaScale (GLrgba c, float scale)
 GLrgba glRgba (char* string)
 {
 
-  long    color;
-  char    buffer[10];
-  char*   pound;
-  GLrgba  result;
+  unsigned color;
+  char     buffer[10];
+  char*    pound;
+  GLrgba   result;
 
   strncmp (buffer, string, 10);
   if (pound = strchr (buffer, '#'))

@@ -672,6 +672,7 @@ void CBuilding::CreateModern ()
   int         skip_interval;
   int         skip_counter;
   int         skip_delta;
+  int         i;
   bool        logo_done;
   bool        do_trim;
   CDeco*      d;
@@ -740,7 +741,7 @@ void CBuilding::CreateModern ()
   }
   index_list = new int[points];   
   //Add the outer walls
-  for (int i = 0; i < points; i++)
+  for (i = 0; i < points; i++)
     index_list[i] = i;
   _mesh->QuadStripAdd (index_list, points);
   _mesh_flat->QuadStripAdd (index_list, points);

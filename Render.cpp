@@ -88,13 +88,13 @@ struct glFont
   unsigned		  base_char;
 } fonts[] = 
 {
-  "Courier New",      0,
-  "Arial",            0,
-  "Times New Roman",  0,
-  "Arial Black",      0,
-  "Impact",           0,
-  "Agency FB",        0,
-  "Book Antiqua",     0,
+  {"Courier New",      0},
+  {"Arial",            0},
+  {"Times New Roman",  0},
+  {"Arial Black",      0},
+  {"Impact",           0},
+  {"Agency FB",        0},
+  {"Book Antiqua",     0},
 };
 
 #if SCREENSAVER
@@ -107,7 +107,7 @@ enum
   EFFECT_GLASS_CITY,
   EFFECT_COUNT,
   EFFECT_DEBUG,
-  EFFECT_DEBUG_OVERBLOOM,
+  EFFECT_DEBUG_OVERBLOOM
 };
 #else
 enum
@@ -119,7 +119,7 @@ enum
   EFFECT_DEBUG,
   EFFECT_BLOOM_RADIAL,
   EFFECT_COLOR_CYCLE,
-  EFFECT_GLASS_CITY,
+  EFFECT_GLASS_CITY
 };
 #endif 
 
@@ -132,7 +132,7 @@ static int              render_height;
 static bool             letterbox;
 static int              letterbox_offset;
 static int              effect;
-static unsigned         next_fps;
+// static unsigned         next_fps;  // unused
 static unsigned         current_fps;
 static unsigned         frames;
 static bool             show_wireframe;

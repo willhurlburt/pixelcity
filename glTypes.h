@@ -20,7 +20,7 @@
   type    operator/  (const float& c);\
   void    operator/= (const type& c);\
   void    operator/= (const float& c);\
-  bool    operator== (const type& c);
+  bool    operator== (const type& c)
 
 
 #define JOINT_MAX_CHILDREN  8

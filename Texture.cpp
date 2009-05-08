@@ -895,6 +895,6 @@ void TextureInit (void)
   for (int i = TEXTURE_BUILDING1; i <= TEXTURE_BUILDING9; i++)
     new CTexture (i, 512, true, false, false);
   new CTexture (TEXTURE_BLOOM,  512,  true, false, false);
-  int  names = PREFIX_COUNT * NAME_COUNT + SUFFIX_COUNT * NAME_COUNT;
+  // int  names = PREFIX_COUNT * NAME_COUNT + SUFFIX_COUNT * NAME_COUNT;
 
 }

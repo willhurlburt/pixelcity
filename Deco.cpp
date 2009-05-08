@@ -207,7 +207,7 @@ void CDeco::CreateLightStrip (float x, float z, float width, float depth, float 
 
   GLvertex  p;
   int       index_list1[] = {0,1,3,2};
-  int       index_list2[] = {4,5,7,6};
+  //int       index_list2[] = {4,5,7,6};  // unused
   float     u, v;
   
   _color = color;
