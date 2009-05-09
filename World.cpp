@@ -723,7 +723,7 @@ int WorldSceneElapsed ()
   if (!EntityReady () || !WorldSceneBegin ())
     elapsed = 1;
   else
-    elapsed = GetTickCount () - (WorldSceneBegin ());
+    elapsed = GetTimeInMillis () - (WorldSceneBegin ());
   elapsed = MAX (elapsed, 1);
   return elapsed;
 
@@ -760,7 +760,7 @@ void WorldUpdate (void)
         fade_state = FADE_IDLE;
         fade_current = 0.0f;
         start_time = time (NULL);
-        scene_begin = GetTickCount ();
+        scene_begin = GetTimeInMillis ();
       }
     } else {
       fade_current = (float)fade_delta / FADE_TIME;

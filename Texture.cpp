@@ -593,7 +593,6 @@ void CTexture::Rebuild ()
   int             lapsed;
 
   start = GetTimeInMillis ();
-  start = GetTickCount ();
   //Since we make textures by drawing into the viewport, we can't make them bigger 
   //than the current view.
   _size = _desired_size;
