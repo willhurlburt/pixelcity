@@ -11,10 +11,18 @@
 
 -----------------------------------------------------------------------------*/
 
+#include "Win.h"
+
 #define FORMAT_VECTOR       "%f %f %f"
 #define MAX_RESULT          256
 #define FORMAT_FLOAT        "%1.2f"
+
+#ifdef WINDOWS
 #define INI_FILE            ".\\" APP ".ini"
+#else
+#define INI_FILE            "./" APP ".ini"
+#endif
+
 #define SECTION             "Settings"
 
 #ifdef WINDOWS
@@ -25,7 +33,6 @@
 #include "glTypes.h"
 
 #include "Ini.h"
-#include "Win.h"
 
 static char                 result[MAX_RESULT];
 
