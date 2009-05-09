@@ -154,12 +154,12 @@ public:
   void              Clear () { _ready = false; }
   void              Rebuild ();
   void              DrawWindows ();
+  void              DrawSky ();
+  void              DrawHeadlight ();
 };
 
 static CTexture*    head;
 static bool         textures_done;
-static GLrgba       horizon_color;
-static GLrgba       cloud_color;
 static bool         prefix_used[PREFIX_COUNT];
 static bool         name_used[NAME_COUNT];
 static bool         suffix_used[SUFFIX_COUNT];
@@ -303,8 +303,6 @@ static void window (int x, int y, int size, int id, GLrgba color)
 
   margin = size / 3;
   half = size / 2;
-  //color = (color * 0.9f) + glRgba (RANDOM_COLOR_SHIFT, RANDOM_COLOR_SHIFT, RANDOM_COLOR_SHIFT);
-  //glColor3fv (&color.red);
   switch (id) {
   case TEXTURE_BUILDING1: //filled, 1-pixel frame
     drawrect (x + 1, y + 1, x + size - 1, y + size - 1, color);
@@ -352,7 +350,6 @@ static void window (int x, int y, int size, int id, GLrgba color)
 static void do_bloom (CTexture* t)
 {
 
-  LIMIT_INTERVAL (10);
   glBindTexture(GL_TEXTURE_2D, 0);		
   glViewport(0, 0, t->_size , t->_size);
   glCullFace (GL_BACK);
@@ -451,6 +448,127 @@ void CTexture::DrawWindows ()
 
 }
 
+
+/*-----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------*/
+
+void CTexture::DrawSky ()
+{
+
+  GLrgba          color;
+  float           grey;
+  float           scale, inv_scale;
+  int             i, x, y;
+  int             width, height;
+  int             offset;
+  int             width_adjust;
+  int             height_adjust;
+
+  color = WorldBloomColor ();
+  grey = (color.red + color.green + color.blue) / 3.0f;
+  //desaturate, slightly dim
+  color = (color + glRgba (grey) * 2.0f) / 15.0f;
+  glDisable (GL_BLEND);
+  glBegin (GL_QUAD_STRIP);
+  glColor3f (0,0,0);
+  glVertex2i (0, _half);
+  glVertex2i (_size, _half);
+  glColor3fv (&color.red);
+  glVertex2i (0, _size - 2);  
+  glVertex2i (_size, _size - 2);  
+  glEnd ();
+  //Draw a bunch of little faux-buildings on the horizon.
+  for (i = 0; i < _size; i += 5) 
+    drawrect (i, _size - RandomVal (8) - RandomVal (8) - RandomVal (8), i + RandomVal (9), _size, glRgba (0.0f));
+  //Draw the clouds
+  for (i = _size - 30; i > 5; i -= 2) {
+
+    x = RandomVal (_size);
+    y = i;
+
+    scale = 1.0f - ((float)y / (float)_size);
+    width = RandomVal (_half / 2) + (int)((float)_half * scale) / 2;
+    scale = 1.0f - (float)y / (float)_size;
+    height = (int)((float)(width) * scale);
+    height = MAX (height, 4);
+
+    glEnable (GL_BLEND);
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable (GL_CULL_FACE);
+    glEnable (GL_TEXTURE_2D);
+    glBindTexture (GL_TEXTURE_2D, TextureId (TEXTURE_SOFT_CIRCLE));
+    glDepthMask (false);
+    glBegin (GL_QUADS);
+    for (offset = -_size; offset <= _size; offset += _size) {
+      for (scale = 1.0f; scale > 0.0f; scale -= 0.25f) {
+
+        inv_scale = 1.0f - (scale);
+        if (scale < 0.4f)
+          color = WorldBloomColor () * 0.1f;
+        else
+          color = glRgba (0.0f);
+        color.alpha = 0.2f;
+        glColor4fv (&color.red);
+        width_adjust = (int)((float)width / 2.0f + (int)(inv_scale * ((float)width / 2.0f)));
+        height_adjust = height + (int)(scale * (float)height * 0.99f);
+        glTexCoord2f (0, 0);   glVertex2i (offset + x - width_adjust, y + height - height_adjust);
+        glTexCoord2f (0, 1);   glVertex2i (offset + x - width_adjust, y + height);
+        glTexCoord2f (1, 1);   glVertex2i (offset + x + width_adjust, y + height);
+        glTexCoord2f (1, 0);   glVertex2i (offset + x + width_adjust, y + height - height_adjust);
+      }
+
+    }
+  }
+  glEnd ();
+
+}
+
+/*-----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------*/
+
+void CTexture::DrawHeadlight ()
+{
+
+  float           radius;
+  int             i, x, y;
+  GLvector2       pos;
+
+  //Make a simple circle of light, bright in the center and fading out
+  radius = ((float)_half) - 20;
+  x = _half - 20;
+  y = _half;
+  glEnable (GL_BLEND);
+  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glBegin (GL_TRIANGLE_FAN);
+  glColor4f (0.8f, 0.8f, 0.8f, 0.6f);
+  glVertex2i (_half - 5, y);
+  glColor4f (0, 0, 0, 0);
+  for (i = 0; i <= 360; i += 36) {
+    pos.x = sinf ((float)(i % 360) * DEGREES_TO_RADIANS) * radius;
+    pos.y = cosf ((float)(i % 360) * DEGREES_TO_RADIANS) * radius;
+    glVertex2i (x + (int)pos.x, _half + (int)pos.y);
+  }
+  glEnd ();
+  x = _half + 20;
+  glBegin (GL_TRIANGLE_FAN);
+  glColor4f (0.8f, 0.8f, 0.8f, 0.6f);
+  glVertex2i (_half + 5, y);
+  glColor4f (0, 0, 0, 0);
+  for (i = 0; i <= 360; i += 36) {
+    pos.x = sinf ((float)(i % 360) * DEGREES_TO_RADIANS) * radius;
+    pos.y = cosf ((float)(i % 360) * DEGREES_TO_RADIANS) * radius;
+    glVertex2i (x + (int)pos.x, _half + (int)pos.y);
+  }
+  glEnd ();
+  x = _half - 6;
+  drawrect_simple (x - 3, y - 2, x + 2, y + 2, glRgba (1.0f));
+  x = _half + 6;
+  drawrect_simple (x - 2, y - 2, x + 3, y + 2, glRgba (1.0f));
+
+}
+
 /*-----------------------------------------------------------------------------
 
   Here is where ALL of the procedural textures are created.  It's filled with 
@@ -469,27 +587,31 @@ void CTexture::Rebuild ()
   int             max_size;
   float           radius;
   GLvector2       pos;
-  GLrgba          color;
   bool            use_framebuffer;
   unsigned char*  bits;
   unsigned        start;
   int             lapsed;
 
+<<<<<<< HEAD:Texture.cpp
   start = GetTimeInMillis ();
-  glBindTexture(GL_TEXTURE_2D, _glid);
-	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, _size, _size, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-  if (_clamp) {
-    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  }
+=======
+  start = GetTickCount ();
   //Since we make textures by drawing into the viewport, we can't make them bigger 
   //than the current view.
   _size = _desired_size;
   max_size = RenderMaxTextureSize ();
   while (_size > max_size)
     _size /= 2;
+>>>>>>> ea90760535dd14b0a55d097d0bbfc5264bd30520:Texture.cpp
+  glBindTexture(GL_TEXTURE_2D, _glid);
+  //Set up the texture
+  glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, _size, _size, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  if (_clamp) {
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  }
   //Set up our viewport so that drawing into our texture will be as easy 
   //as possible.  We make the viewport and projection simply match the given 
   //texture size. 
@@ -501,6 +623,7 @@ void CTexture::Rebuild ()
   glPushMatrix ();
   glLoadIdentity();
   glDisable (GL_CULL_FACE);
+  glDisable (GL_FOG);
   glBindTexture(GL_TEXTURE_2D, 0);
   glTranslatef(0, 0, -10.0f);
   glClearColor (0, 0, 0, _masked ? 0.0f : 1.0f);
@@ -508,6 +631,7 @@ void CTexture::Rebuild ()
   use_framebuffer = true;
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   switch (_my_id) {
+<<<<<<< HEAD:Texture.cpp
   case TEXTURE_GROUND:
     unsigned char icolor[4];
     char        cell;
@@ -548,6 +672,8 @@ void CTexture::Rebuild ()
     use_framebuffer = false;
     delete[] bits;
     break;
+=======
+>>>>>>> ea90760535dd14b0a55d097d0bbfc5264bd30520:Texture.cpp
   case TEXTURE_LATTICE:
     glLineWidth (2.0f);
 
@@ -590,7 +716,6 @@ void CTexture::Rebuild ()
     glEnd ();
     break;
   case TEXTURE_LIGHT:
-    //
     glEnable (GL_BLEND);
     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     radius = ((float)_half) - 3;
@@ -612,37 +737,7 @@ void CTexture::Rebuild ()
     }
     break;
   case TEXTURE_HEADLIGHT:
-    //Make a simple circle of light, bright in the center and fading out
-    radius = ((float)_half) - 20;
-    x = _half - 20;
-    y = _half;
-    glEnable (GL_BLEND);
-    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glBegin (GL_TRIANGLE_FAN);
-    glColor4f (0.8f, 0.8f, 0.8f, 0.6f);
-    glVertex2i (_half - 5, y);
-    glColor4f (0, 0, 0, 0);
-    for (i = 0; i <= 360; i += 36) {
-      pos.x = sinf ((float)(i % 360) * DEGREES_TO_RADIANS) * radius;
-      pos.y = cosf ((float)(i % 360) * DEGREES_TO_RADIANS) * radius;
-      glVertex2i (x + (int)pos.x, _half + (int)pos.y);
-    }
-    glEnd ();
-    x = _half + 20;
-    glBegin (GL_TRIANGLE_FAN);
-    glColor4f (0.8f, 0.8f, 0.8f, 0.6f);
-    glVertex2i (_half + 5, y);
-    glColor4f (0, 0, 0, 0);
-    for (i = 0; i <= 360; i += 36) {
-      pos.x = sinf ((float)(i % 360) * DEGREES_TO_RADIANS) * radius;
-      pos.y = cosf ((float)(i % 360) * DEGREES_TO_RADIANS) * radius;
-      glVertex2i (x + (int)pos.x, _half + (int)pos.y);
-    }
-    glEnd ();
-    x = _half - 6;
-    drawrect_simple (x - 3, y - 2, x + 2, y + 2, glRgba (1.0f));
-    x = _half + 6;
-    drawrect_simple (x - 2, y - 2, x + 3, y + 2, glRgba (1.0f));
+    DrawHeadlight ();
     break;
   case TEXTURE_LOGOS:
     i = 0;
@@ -664,55 +759,6 @@ void CTexture::Rebuild ()
       i += LOGO_PIXELS;
     }
     break;
-  case TEXTURE_CLOUDS:
-    int   width, height;
-    int   offset;
-    float scale;
-
-    for (i = _size - 30; i > 5; i -= 1) {
-      x = RandomVal (_size);
-      y = i;
-
-      scale = 1.0f - ((float)y / (float)_size);
-      width = RandomVal (_half / 2) + (int)((float)_half * scale) / 2;
-      scale = 1.0f - (float)y / (float)_size;
-      height = (int)((float)(width) * scale);
-      height = MAX (height, 4);
-
-      glEnable (GL_BLEND);
-      glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-      glDisable (GL_CULL_FACE);
-      glEnable (GL_TEXTURE_2D);
-      glBindTexture (GL_TEXTURE_2D, TextureId (TEXTURE_SOFT_CIRCLE));
-      glDepthMask (false);
-      glBegin (GL_QUADS);
-      for (offset = -_size; offset <= _size; offset += _size) {
-        for (scale = 1.0f; scale > 0.0f; scale -= 0.25f) {
-          int     width_adjust;
-          int     height_adjust;
-          float   inv_scale;
-
-          inv_scale = 1.0f - (scale);
-
-          if (scale < 0.4f)
-            color = cloud_color;
-          else
-            color = glRgba (0.0f);
-          color.alpha = 1.0f;
-          glColor4fv (&color.red);
-          width_adjust = (int)((float)width / 2.0f + (int)(inv_scale * ((float)width / 2.0f)));
-          height_adjust = height + (int)(scale * (float)height * 0.99f);
-
-          glTexCoord2f (0, 0);   glVertex2i (offset + x - width_adjust, y + height - height_adjust);
-          glTexCoord2f (0, 1);   glVertex2i (offset + x - width_adjust, y + height);
-          glTexCoord2f (1, 1);   glVertex2i (offset + x + width_adjust, y + height);
-          glTexCoord2f (1, 0);   glVertex2i (offset + x + width_adjust, y + height - height_adjust);
-        }
-
-      }
-      glEnd ();
-    }
-    break;
   case TEXTURE_TRIM:
     int     margin;
     y = 0;
@@ -730,18 +776,7 @@ void CTexture::Rebuild ()
       drawrect_simple (x + margin, y + margin * 2, x + TRIM_PIXELS - margin, y + TRIM_PIXELS - margin, glRgba (1.0f), glRgba (0.5f));
     break;
   case TEXTURE_SKY:
-    glDisable (GL_BLEND);
-    glBegin (GL_QUAD_STRIP);
-    glColor3f (0,0,0);
-    glVertex2i (0, _half);
-    glVertex2i (_size, _half);
-    glColor3fv (&horizon_color.red);
-    glVertex2i (0, _size - 2);  
-    glVertex2i (_size, _size - 2);  
-    glEnd ();
-    //Draw a bunch of little faux-buildings on the horizon.
-    for (i = 0; i < _size; i += 5) 
-      drawrect (i, _size - RandomVal (8) - RandomVal (8) - RandomVal (8), i + RandomVal (9), _size, glRgba (0.0f));
+    DrawSky ();
     break;
   default: //building textures
     DrawWindows ();
@@ -805,12 +840,11 @@ unsigned TextureRandomBuilding (int index)
 void TextureReset (void)
 {
 
-  float   hue, sat;
-
   textures_done = false;
   build_time = 0;
   for (CTexture* t = head; t; t = t->_next)
     t->Clear ();
+<<<<<<< HEAD:Texture.cpp
   hue = 0.5f + (float)RandomVal (20) / 100.0f;
   sat = 0.1f + (float)RandomVal (80) / 100.0f;
   horizon_color = glRgbaFromHsl (hue, sat, 0.15f);
@@ -818,6 +852,11 @@ void TextureReset (void)
   memset (prefix_used, 0, sizeof (prefix_used));
   memset (name_used, 0, sizeof (name_used));
   memset (suffix_used, 0, sizeof (suffix_used));
+=======
+  ZeroMemory (prefix_used, sizeof (prefix_used));
+  ZeroMemory (name_used, sizeof (name_used));
+  ZeroMemory (suffix_used, sizeof (suffix_used));
+>>>>>>> ea90760535dd14b0a55d097d0bbfc5264bd30520:Texture.cpp
 
 }
 
@@ -886,14 +925,11 @@ void TextureInit (void)
 {
 
   new CTexture (TEXTURE_SKY,          512,  true,  false, false);
-  new CTexture (TEXTURE_CLOUDS,       256,  true,  false, true);
   new CTexture (TEXTURE_LATTICE,      128,  true,  true,  true);
   new CTexture (TEXTURE_LIGHT,        128,  false, false, true);
   new CTexture (TEXTURE_SOFT_CIRCLE,  128,  false, false, true);
   new CTexture (TEXTURE_HEADLIGHT,    128,  false, false, true);
   new CTexture (TEXTURE_TRIM,  TRIM_RESOLUTION,  true, false, false);
-  if (SHOW_DEBUG_GROUND)
-    new CTexture (TEXTURE_GROUND, 1024, false, false, false);
   new CTexture (TEXTURE_LOGOS, LOGO_RESOLUTION,  true, false, true);
   for (int i = TEXTURE_BUILDING1; i <= TEXTURE_BUILDING9; i++)
     new CTexture (i, 512, true, false, false);

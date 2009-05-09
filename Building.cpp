@@ -201,7 +201,6 @@ void CBuilding::ConstructCube (int left, int right, int front, int back, int bot
   }
   _mesh->CubeAdd (c);
 
-
 }
 
 /*-----------------------------------------------------------------------------
@@ -241,7 +240,6 @@ void CBuilding::ConstructCube (float left, float right, float front, float back,
     c.index_list.push_back(base_index + i);
   }
   _mesh_flat->CubeAdd (c);
-
 
 }
 
@@ -472,8 +470,6 @@ float CBuilding::ConstructWall (int start_x, int start_y, int start_z, int direc
 
 }
 
-static int maxt;
-
 /*-----------------------------------------------------------------------------
 
   This makes a big chunky building of intersecting cubes.  
@@ -525,9 +521,6 @@ void CBuilding::CreateBlocky ()
     max_tiers = 2;
   else
     max_tiers = 1;
-  max_tiers = MIN (maxt, max_tiers);
-  maxt++;
-  maxt %= 8;
   //We begin at the top of the building, and work our way down.
   //Viewed from above, the sections of the building are randomly sized
   //rectangles that ALWAYS include the center of the building somewhere within 
@@ -647,6 +640,7 @@ void CBuilding::CreateSimple ()
   _mesh->Compile ();
 
 }
+
 
 /*-----------------------------------------------------------------------------
 

@@ -31,6 +31,7 @@
 #include "glTypes.h"
 
 #include "Camera.h"
+#include "Entity.h"
 #include "Light.h"
 #include "Macro.h"
 #include "Math.h"
@@ -84,6 +85,8 @@ void LightRender ()
 
   CLight*     l;
 
+  if (!EntityReady ())
+    return;
   if (!angles_done) {
     for (int size = 0; size < MAX_SIZE; size++) {
       for (int i = 0 ;i < 360; i++) {

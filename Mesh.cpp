@@ -22,14 +22,8 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#if defined(WINDOWS) && _MSC_VER <= 1200
-#include <GL/glaux.h>
-#endif
-
 #include <vector>
-
 #include "glTypes.h"
-
 #include "Mesh.h"
 
 /*-----------------------------------------------------------------------------
@@ -41,6 +35,7 @@ CMesh::CMesh ()
 
   _list = glGenLists(1);
   _compiled = false;
+  _polycount = 0;
 
 }
 
@@ -51,8 +46,12 @@ CMesh::CMesh ()
 CMesh::~CMesh ()
 {
 
-  if (_list)
-    glDeleteLists (_list, 1);
+  glDeleteLists (_list, 1);
+  _vertex.clear ();
+  _fan.clear ();
+  _quad_strip.clear ();
+  _cube.clear ();
+
 
 }
 

@@ -71,7 +71,6 @@ void VisibleUpdate (void)
   float     angle_diff;
   float     target_x, target_z;
 
-  LIMIT_INTERVAL (10);
   //Clear the visibility table
   memset (vis_grid, 0, sizeof (vis_grid));
   //Calculate which cell the camera is in

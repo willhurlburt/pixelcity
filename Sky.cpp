@@ -67,13 +67,13 @@ void CSky::Render ()
 
   GLvector    angle, position;
 
-  if (!RenderFog ())
+  if (!TextureReady ())
     return;
   glDepthMask (false);
   glPushAttrib (GL_POLYGON_BIT | GL_FOG_BIT);
   glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-  glDisable (GL_FOG);
   glDisable (GL_CULL_FACE);
+  glDisable (GL_FOG);
   glPushMatrix ();
   glLoadIdentity();
   angle = CameraAngle ();
@@ -84,10 +84,6 @@ void CSky::Render ()
   glTranslatef (0.0f, -position.y / 100.0f, 0.0f);
   glEnable (GL_TEXTURE_2D);
   glBindTexture(GL_TEXTURE_2D, TextureId (TEXTURE_SKY));
-  glCallList (m_list);
-  glEnable (GL_BLEND);
-  glBindTexture(GL_TEXTURE_2D, TextureId (TEXTURE_CLOUDS));
-  glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glCallList (m_list);
   glPopMatrix ();
   glPopAttrib ();
