@@ -2,7 +2,7 @@
 #include <windows.h>
 #else
 #include <X11/Xlib.h>
-typedef Window HWND;
+#include <X11/Xutil.h>
 #endif
 
 //Versioning info
@@ -48,8 +48,16 @@ enum
   WEST
 };
 
+#ifdef WINDOWS
 HWND  WinHwnd (void);
 void  WinPopup (char* message, ...);
+#else
+Display     *WinGetDisplay();
+XVisualInfo *WinGetVisual();
+Window      WinGetWindow();
+void        WinHandleEvent(XEvent evt);
+#endif
+
 void  WinTerm (void);
 bool  WinInit (void);
 int   WinWidth (void);

@@ -34,6 +34,13 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
+#ifndef WINDOWS
+#include <X11/Xlib.h>
+#include <GL/glx.h>
+
+#include <errno.h>
+#endif
+
 #include "glTypes.h"
 #include "Entity.h"
 #include "Car.h"
@@ -49,6 +56,7 @@
 #include "Win.h"
 #include "time_util.h"
 
+#ifdef WINDOWS
 static	PIXELFORMATDESCRIPTOR pfd =			
 {
 	sizeof(PIXELFORMATDESCRIPTOR),			
@@ -70,6 +78,7 @@ static	PIXELFORMATDESCRIPTOR pfd =
 	0,											  // Reserved
 	0, 0, 0										// Layer Masks Ignored
 };
+#endif
 
 static char             help[] = 
   "ESC - Exit!\n" 
@@ -124,8 +133,12 @@ enum
 };
 #endif 
 
+#ifdef WINDOWS
 static HDC			        hDC;
 static HGLRC		        hRC;
+#else
+static GLXContext       ctx;
+#endif
 static float            render_aspect;
 static float            fog_distance;
 static int              render_width;
@@ -515,10 +528,21 @@ void RenderResize (void)
 void RenderTerm (void)
 {
 
+#ifdef WINDOWS
   if (!hRC)
     return;
   wglDeleteContext (hRC);
   hRC = NULL;
+#else
+  Display *dpy = WinGetDisplay();
+
+  if (!ctx)
+    return;
+
+  glXMakeCurrent(dpy, None, NULL);
+  glXDestroyContext(dpy, ctx);
+  ctx = NULL;
+#endif
 
 }
 
@@ -529,6 +553,7 @@ void RenderTerm (void)
 void RenderInit (void)
 {
 
+#ifdef WINDOWS
   HWND              hWnd;
 	unsigned		      PixelFormat;
   HFONT	            font;		
@@ -557,6 +582,23 @@ void RenderInit (void)
 	  SelectObject(hDC, oldfont);
 	  DeleteObject(font);		
   }
+#else
+  Display     *dpy = WinGetDisplay();
+  XVisualInfo *vis = WinGetVisual();
+
+  if(!vis) {
+    std::cerr << "huh? no visual has been set...\n";
+    return;
+  }
+
+  if(!(ctx = glXCreateContext(dpy, vis, NULL, True))) {
+    std::cerr << "Could not create a GLX rendering context: " << strerror(errno) << ".\n";
+    return;
+  }
+
+  glXMakeCurrent(dpy, WinGetWindow(), ctx);
+#endif
+
   //If the program is running for the first time, set the defaults.
   if (!IniInt ("SetDefaults")) {
     IniIntSet ("SetDefaults", 1);
@@ -575,7 +617,14 @@ void RenderInit (void)
   glViewport (0, 0, WinWidth (), WinHeight ());
   glClearColor (0.0f, 0.0f, 0.0f, 1.0f);
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+#ifdef WINDOWS
   SwapBuffers (hDC);
+#else
+  glFlush();
+  glXSwapBuffers(dpy, WinGetWindow());
+#endif
+
   RenderResize ();
 
 }
@@ -766,7 +815,12 @@ void RenderUpdate (void)
     glViewport (0, letterbox_offset, render_width, render_height);
   if (LOADING_SCREEN && TextureReady () && !EntityReady ()) {
     do_effects (EFFECT_NONE);
+#ifdef WINDOWS
     SwapBuffers (hDC);
+#else
+    //glFlush();  // ???
+    glXSwapBuffers(WinGetDisplay(), WinGetWindow());
+#endif
     return;
   }
 	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
@@ -841,6 +895,12 @@ void RenderUpdate (void)
   //Show the help overlay
   if (show_help)
     do_help ();
+
+#ifdef WINDOWS
   SwapBuffers (hDC);
+#else
+  //glFlush();  // ???
+  glXSwapBuffers(WinGetDisplay(), WinGetWindow());
+#endif
 
 }

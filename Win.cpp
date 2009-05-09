@@ -14,6 +14,11 @@
 
 #ifdef WINDOWS
 #include <windows.h>
+#else
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/keysym.h>
+#include <GL/glx.h>
 #endif
 
 #include <math.h>
@@ -39,17 +44,31 @@
 #include "World.h"
 #include "Visible.h"
 
+#ifdef WINDOWS
 #pragma comment (lib, "opengl32.lib")
 #pragma comment (lib, "winmm.lib")
 #pragma comment (lib, "glu32.lib")
 #if SCREENSAVER
 #pragma comment (lib, "scrnsave.lib")
 #endif	
+#endif
 
 
-
+#ifdef WINDOWS
 static HWND         hwnd;
 static HINSTANCE    module;
+#else
+struct POINT {
+  int x;
+  int y;
+};
+
+static Display     *dpy;
+static XVisualInfo *vis;
+static Window      wnd;
+static Atom        del_atom;
+#endif
+
 static int          width;
 static int          height;
 static int          half_width;
@@ -60,9 +79,31 @@ static bool         mouse_forced;
 static POINT        select_pos;
 static POINT        mouse_pos;
 static bool         quit;
+
+#ifdef WINDOWS
+
 static HINSTANCE    instance;
 
 LONG WINAPI ScreenSaverProc (HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
+#else
+
+Display *WinGetDisplay()
+{
+  return dpy;
+}
+
+XVisualInfo *WinGetVisual()
+{
+  return vis;
+}
+
+Window WinGetWindow()
+{
+  return wnd;
+}
+
+#endif  /* !WINDOWS */
 
 /*-----------------------------------------------------------------------------
 
@@ -71,6 +112,7 @@ LONG WINAPI ScreenSaverProc (HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 static void CenterCursor ()
 {
 
+#ifdef WINDOWS
   int             center_x;
   int             center_y;
   RECT            rect;
@@ -81,6 +123,11 @@ static void CenterCursor ()
   center_x = rect.left + (rect.right - rect.left) / 2;
   center_y = rect.top + (rect.bottom - rect.top) / 2;
   SetCursorPos (center_x, center_y);
+#else
+  mouse_forced = true;
+
+  /*XWarpPointer(dpy, ...);*/
+#endif
 
 }
 
@@ -91,6 +138,7 @@ static void CenterCursor ()
 static void MoveCursor (int x, int y)
 {
 
+#ifdef WINDOWS
   int             center_x;
   int             center_y;
   RECT            rect;
@@ -101,6 +149,11 @@ static void MoveCursor (int x, int y)
   center_x = rect.left + x;
   center_y = rect.top + y;
   SetCursorPos (center_x, center_y);
+#else
+  mouse_forced = true;
+
+  /*XWarpPointer(dpy, ...);*/
+#endif
 
 }
 
@@ -108,6 +161,7 @@ static void MoveCursor (int x, int y)
                                     n o t e
 -----------------------------------------------------------------------------*/
 
+#ifdef WINDOWS
 void WinPopup (char* message, ...)
 {
 
@@ -121,6 +175,7 @@ void WinPopup (char* message, ...)
     MB_TASKMODAL);
 
 }
+#endif
 
 /*-----------------------------------------------------------------------------
 
@@ -163,8 +218,14 @@ int WinHeight (void)
 
 void WinTerm (void)
 {
+#ifdef WINDOWS
 #if !SCREENAVER
   DestroyWindow (hwnd);
+#endif
+#else
+  XDestroyWindow(dpy, wnd);
+  XFree(vis);
+  XCloseDisplay(dpy);
 #endif
 }
 
@@ -172,12 +233,14 @@ void WinTerm (void)
 
 -----------------------------------------------------------------------------*/
 
+#ifdef WINDOWS
 HWND WinHwnd (void)
 {
 
   return hwnd;
 
 }
+#endif
 
 
 /*-----------------------------------------------------------------------------
@@ -239,6 +302,7 @@ void AppTerm (void)
 
 }
 
+#ifdef WINDOWS
 /*-----------------------------------------------------------------------------
                                 W i n M a i n
 -----------------------------------------------------------------------------*/
@@ -435,12 +499,190 @@ LONG WINAPI ScreenSaverProc(HWND hwnd_in,UINT message,WPARAM wparam,LPARAM lpara
 
 }
 
+#else   /* !WINDOWS */
+
+int main()
+{
+  XEvent report;
+
+  if(!WinInit())
+    return 1;
+
+  AppInit();
+
+  while (!quit) {
+    while(XEventsQueued(dpy, QueuedAfterReading)) {
+      XNextEvent(dpy, &report);
+      WinHandleEvent(report);
+    };
+
+    AppUpdate ();
+  }
+
+  AppTerm();
+
+  return 0;
+}
+
+void WinHandleEvent(XEvent evt)
+{
+  POINT p;
+  float delta_x, delta_y;
+  int buttons;
+  KeySym key;
+
+  switch(evt.type) {
+    case MapNotify:
+      /* */
+      break;
+    case ConfigureNotify:  /* size or position changed */
+      width = evt.xconfigure.width;
+      height = evt.xconfigure.height;
+
+      half_width = width / 2;
+      half_height = height / 2;
+
+      IniIntSet("WindowX", evt.xconfigure.x);
+      IniIntSet("WindowY", evt.xconfigure.y);
+      IniIntSet("WindowWidth", width);
+      IniIntSet("WindowHeight", height);
+
+      RenderResize();
+
+      break;
+    case KeyPress:
+      key = XLookupKeysym(&evt.xkey, 0);
+
+      if (key == XK_R)
+        WorldReset(); 
+      else if (key == XK_W)
+        RenderWireframeToggle ();
+      else if (key == XK_E)
+        RenderEffectCycle ();
+      else if (key == XK_L)
+        RenderLetterboxToggle ();
+      else if (key == XK_F)
+        RenderFPSToggle ();
+      else if (key == XK_G)
+        RenderFogToggle ();
+      else if (key == XK_T)
+        RenderFlatToggle ();
+      else if (key == XK_F1)
+        RenderHelpToggle ();
+      else if (key == XK_Escape)
+        AppQuit();
+      else if (!SCREENSAVER) {
+        //Dev mode keys
+        if (key == XK_C)
+          CameraAutoToggle (); 
+        if (key == XK_B)
+          CameraNextBehavior ();
+        if (key == XK_F5)
+          CameraReset ();
+        if (key == XK_Up)
+          CameraMedial (1.0f);
+        if (key == XK_Down)
+          CameraMedial (-1.0f);
+        if (key == XK_Left)
+          CameraLateral (1.0f);
+        if (key == XK_Right)
+          CameraLateral (-1.0f);
+        if (key == XK_Prior)
+          CameraVertical (1.0f);
+        if (key == XK_Next)
+          CameraVertical (-1.0f);
+      } else
+        break;
+    case ButtonPress:
+      if(evt.xbutton.button == Button1)
+        lmb = 1;
+      else if(evt.xbutton.button == Button2)
+        rmb = 1;
+      else
+        break;
+
+      if((lmb && !rmb) || (!lmb && rmb))
+        XGrabPointer(dpy, wnd, False, PointerMotionMask | ButtonMotionMask,
+            GrabModeSync, GrabModeAsync, None, None, evt.xbutton.time);
+      break;
+    case ButtonRelease:
+      if(evt.xbutton.button == Button1)
+        lmb = 0;
+      else if(evt.xbutton.button == Button2)
+        rmb = 0;
+      else
+        break;
+
+      if(!lmb && !rmb) {
+        XUngrabPointer(dpy, evt.xbutton.time);
+        MoveCursor(select_pos.x, select_pos.y);
+      }
+      break;
+    case MotionNotify:
+      p.x = evt.xmotion.x_root;
+      p.y = evt.xmotion.y_root;
+      buttons = evt.xmotion.state & (Button1 | Button2);
+
+      if (p.x < 0 || p.x > width)
+        break;
+      if (p.y < 0 || p.y > height)
+        break;
+
+      if (!mouse_forced && !lmb && !rmb) {
+        select_pos = p; 
+      }
+      if (mouse_forced) {
+        mouse_forced = false;
+      } else if (buttons) {
+        CenterCursor ();
+        delta_x = (float)(mouse_pos.x - p.x) * MOUSE_MOVEMENT;
+        delta_y = (float)(mouse_pos.y - p.y) * MOUSE_MOVEMENT;
+
+        if(buttons == (Button1 | Button2)) {
+          GLvector pos;
+
+          CameraPan(delta_x);
+          pos = CameraPosition();
+          pos.y += delta_y;
+          CameraPositionSet(pos);
+        } else if(buttons == Button2) {
+          CameraPan(delta_x);
+          CameraForward(delta_y);
+        } else if(buttons == Button1) {
+          GLvector angle = CameraAngle();
+
+          angle.y -= delta_x;
+          angle.x += delta_y;
+
+          CameraAngleSet(angle);
+        }
+      }
+
+      mouse_pos = p;
+
+      break;
+    case ClientMessage:
+      /* message from another client; here, likely the WM */
+      if((Atom)evt.xclient.data.l[0] == del_atom)
+        AppQuit();
+      break;
+  }
+}
+
+static Bool WaitForNotify(Display *dpy, XEvent *event, XPointer arg) {
+  return (event->type == MapNotify) && (event->xmap.window == (Window)arg);
+}
+
+#endif  /* !WINDOWS */
+
 /*-----------------------------------------------------------------------------
 
 -----------------------------------------------------------------------------*/
 
 bool WinInit (void)
 {
+
+#ifdef WINDOWS
 
   WNDCLASSEX    wcex;
   int           x, y;
@@ -485,5 +727,49 @@ bool WinInit (void)
     ShowWindow (hwnd, SW_SHOW);
   UpdateWindow (hwnd);
   return true;
+
+#else  /* !WINDOWS */
+
+  int attrs[] = {GLX_RGBA, GLX_DOUBLEBUFFER, GLX_RED_SIZE, 8,
+    GLX_GREEN_SIZE, 8, GLX_BLUE_SIZE, 8, GLX_DEPTH_SIZE, 1,
+    GLX_AUX_BUFFERS, 1, None};
+  XSetWindowAttributes swa;
+  XEvent event;
+  Window root;
+
+  dpy = XOpenDisplay(NULL);  // use $DISPLAY
+
+  if(!dpy) {
+    std::cerr << "Could not open display to " << XDisplayName(NULL) << std::endl;
+    return false;
+  }
+
+  root = RootWindow(dpy, vis->screen);
+
+  vis = glXChooseVisual(dpy, DefaultScreen(dpy), attrs);
+
+  if(!vis) {
+    std::cerr << "Could not get a GLX visual.\n";
+    return false;
+  }
+
+  swa.colormap = XCreateColormap(dpy, root, vis->visual, AllocNone);
+  swa.event_mask = StructureNotifyMask | ButtonMotionMask | PointerMotionMask;
+
+  wnd = XCreateWindow(dpy, root, 0, 0, 640, 480, 0, vis->depth,
+      InputOutput, vis->visual, CWEventMask | CWColormap, &swa);
+
+  XMapWindow(dpy, wnd);
+
+  /* wait for it to appear: glXMakeCurrent may require it to be visible. */
+  XIfEvent(dpy, &event, WaitForNotify, (XPointer)wnd);
+
+  del_atom = XInternAtom(dpy, "WM_DELETE_WINDOW", True);
+  if(del_atom != None)
+    XSetWMProtocols(dpy, wnd, &del_atom, 1);
+
+  return true;
+
+#endif  /* !WINDOWS */
 
 }
