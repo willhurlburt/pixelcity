@@ -158,11 +158,11 @@ GLbbox    glBboxClear (void);
 GLbbox    glBboxContainPoint (GLbbox box, GLvector point);
 bool      glBboxTestPoint (GLbbox box, GLvector point);
 
-GLrgba    glRgba (char* string);
+//GLrgba    glRgba (char* string);
 GLrgba    glRgba (float red, float green, float blue);
 GLrgba    glRgba (float luminance);
 GLrgba    glRgba (float red, float green, float blue, float alpha);
-GLrgba    glRgba (long c);
+//GLrgba    glRgba (long c);
 GLrgba    glRgba (int red, int green, int blue);
 GLrgba    glRgbaAdd (GLrgba c1, GLrgba c2);
 GLrgba    glRgbaSubtract (GLrgba c1, GLrgba c2);

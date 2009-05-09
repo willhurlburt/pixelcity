@@ -160,6 +160,7 @@ GLrgba glRgbaScale (GLrgba c, float scale)
 
 -----------------------------------------------------------------------------*/
 
+/* This is ... weird.  (strncmp?)  But not used, so kill it rather than fixing it.
 GLrgba glRgba (char* string)
 {
 
@@ -179,7 +180,7 @@ GLrgba glRgba (char* string)
   result.alpha = 1.0f;
   return result;  
 
-}
+} */
 
 /*-----------------------------------------------------------------------------
 
@@ -237,6 +238,7 @@ GLrgba glRgba (float red, float green, float blue, float alpha)
 
 -----------------------------------------------------------------------------*/
 
+/* Uses windows-specific macros, but isn't used, so don't bother porting yet.
 GLrgba glRgba (long c)
 {
 
@@ -249,6 +251,7 @@ GLrgba glRgba (long c)
   return result;
 
 }
+*/
 
 /*-----------------------------------------------------------------------------
 
