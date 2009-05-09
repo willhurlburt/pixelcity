@@ -1,6 +1,8 @@
 #ifndef glTYPES
 #define glTYPES
 
+#include <iostream>
+
 #define GL_CLAMP_TO_EDGE 0x812F
 
 #define OPERATORS(type)     \
@@ -42,6 +44,14 @@ struct GLvector
 };
 
 typedef GLvector       GLvector3;
+
+// for non-windows version of Ini.cpp
+inline std::ostream& operator<<(std::ostream& out, const GLvector& v) {
+  return out << v.x << " " << v.y << " " << v.z;
+}
+inline std::istream& operator>>(std::istream& in, GLvector& v) {
+  return in >> v.x >> v.y >> v.z;
+}
 
 struct GLvector2
 {
