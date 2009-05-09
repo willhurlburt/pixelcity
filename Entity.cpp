@@ -191,7 +191,7 @@ static void do_compile ()
     compile_y++;
     if (compile_y == GRID_SIZE)
       compiled = true;
-    compile_end = GetTickCount ();
+    compile_end = GetTimeInMillis ();
   } 
   compile_count++;
 

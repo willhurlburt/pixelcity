@@ -592,9 +592,7 @@ void CTexture::Rebuild ()
   unsigned        start;
   int             lapsed;
 
-<<<<<<< HEAD:Texture.cpp
   start = GetTimeInMillis ();
-=======
   start = GetTickCount ();
   //Since we make textures by drawing into the viewport, we can't make them bigger 
   //than the current view.
@@ -602,7 +600,6 @@ void CTexture::Rebuild ()
   max_size = RenderMaxTextureSize ();
   while (_size > max_size)
     _size /= 2;
->>>>>>> ea90760535dd14b0a55d097d0bbfc5264bd30520:Texture.cpp
   glBindTexture(GL_TEXTURE_2D, _glid);
   //Set up the texture
   glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, _size, _size, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -631,49 +628,6 @@ void CTexture::Rebuild ()
   use_framebuffer = true;
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   switch (_my_id) {
-<<<<<<< HEAD:Texture.cpp
-  case TEXTURE_GROUND:
-    unsigned char icolor[4];
-    char        cell;
-    
-    //memset (buffer, 0, 1024 * 1024 * 4);
-    bits = new unsigned char[_size * _size * 4];
-    memset (bits, 0, sizeof (bits));
-    icolor[3] = 255;
-    for (x = 0; x < _size; x++) {
-      for (y = 0; y < _size; y++) {
-        cell = WorldCell (x, y);
-        memset (icolor, 0, 3);
-        if (cell & CLAIM_ROAD) 
-          icolor[0] = icolor[1] = icolor[2] = 12;
-        if (cell == CLAIM_WALK)
-          icolor[0] = icolor[1] = icolor[2] = 64;
-        icolor[0] += (unsigned char)RandomVal (4);
-        icolor[1] += (unsigned char)RandomVal (4);
-        icolor[2] += (unsigned char)RandomVal (4);
-        if (1) { //use this to make the road lanes visible
-          if (cell & MAP_ROAD_EAST)
-            icolor[0] += 128;
-          if (cell & MAP_ROAD_WEST)
-            icolor[1] += 128;
-          if (cell & MAP_ROAD_NORTH)
-            icolor[2] += 128;
-          if (cell & MAP_ROAD_SOUTH) {
-            icolor[1] += 64;
-            icolor[2] += 64;
-          }
-        }
-        memcpy (&bits[(x + y * _size) * 4], &icolor[0], 4);
-      }
-    }
-    glBindTexture(GL_TEXTURE_2D, _glid);
-
-	  glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, _size, _size, 0, GL_RGBA, GL_UNSIGNED_BYTE, bits);
-    use_framebuffer = false;
-    delete[] bits;
-    break;
-=======
->>>>>>> ea90760535dd14b0a55d097d0bbfc5264bd30520:Texture.cpp
   case TEXTURE_LATTICE:
     glLineWidth (2.0f);
 
@@ -844,19 +798,9 @@ void TextureReset (void)
   build_time = 0;
   for (CTexture* t = head; t; t = t->_next)
     t->Clear ();
-<<<<<<< HEAD:Texture.cpp
-  hue = 0.5f + (float)RandomVal (20) / 100.0f;
-  sat = 0.1f + (float)RandomVal (80) / 100.0f;
-  horizon_color = glRgbaFromHsl (hue, sat, 0.15f);
-  cloud_color  = glRgbaFromHsl (hue, 0.15f, 0.1f);
   memset (prefix_used, 0, sizeof (prefix_used));
   memset (name_used, 0, sizeof (name_used));
   memset (suffix_used, 0, sizeof (suffix_used));
-=======
-  ZeroMemory (prefix_used, sizeof (prefix_used));
-  ZeroMemory (name_used, sizeof (name_used));
-  ZeroMemory (suffix_used, sizeof (suffix_used));
->>>>>>> ea90760535dd14b0a55d097d0bbfc5264bd30520:Texture.cpp
 
 }
 
