@@ -744,7 +744,7 @@ bool WinInit (void)
     return false;
   }
 
-  root = RootWindow(dpy, vis->screen);
+  root = RootWindow(dpy, DefaultScreen(dpy));
 
   vis = glXChooseVisual(dpy, DefaultScreen(dpy), attrs);
 
