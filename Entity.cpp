@@ -41,7 +41,12 @@ struct entity
 
   entity() : object(NULL) {};
   entity(CEntity* o) : object(o) {};
-  ~entity() {delete object;};
+
+  entity(const entity& rhs) : object(rhs.object) {};
+  entity& operator=(const entity& rhs) {
+    object = rhs.object;
+    return *this;
+  };
 
   bool operator<(const entity& rhs) const {
     if (this->object->Alpha () && !rhs.object->Alpha ())
@@ -317,7 +322,10 @@ void EntityRender ()
 void EntityClear ()
 {
 
-  entity_list.resize(0);
+  for(std::vector<entity>::iterator i = entity_list.begin(); i < entity_list.end(); ++i)
+    delete i->object;
+  entity_list.clear();
+
   compile_x = 0;
   compile_y = 0;
   compile_count = 0;
