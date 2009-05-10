@@ -553,19 +553,19 @@ void WinHandleEvent(XEvent evt)
     case KeyPress:
       key = XLookupKeysym(&evt.xkey, 0);
 
-      if (key == XK_R)
+      if (key == XK_R || key == XK_r)
         WorldReset(); 
-      else if (key == XK_W)
+      else if (key == XK_w)
         RenderWireframeToggle ();
-      else if (key == XK_E)
+      else if (key == XK_e)
         RenderEffectCycle ();
-      else if (key == XK_L)
+      else if (key == XK_l)
         RenderLetterboxToggle ();
-      else if (key == XK_F)
+      else if (key == XK_f)
         RenderFPSToggle ();
-      else if (key == XK_G)
+      else if (key == XK_g)
         RenderFogToggle ();
-      else if (key == XK_T)
+      else if (key == XK_t)
         RenderFlatToggle ();
       else if (key == XK_F1)
         RenderHelpToggle ();
@@ -573,9 +573,9 @@ void WinHandleEvent(XEvent evt)
         AppQuit();
       else if (!SCREENSAVER) {
         //Dev mode keys
-        if (key == XK_C)
+        if (key == XK_c)
           CameraAutoToggle (); 
-        if (key == XK_B)
+        if (key == XK_b)
           CameraNextBehavior ();
         if (key == XK_F5)
           CameraReset ();
