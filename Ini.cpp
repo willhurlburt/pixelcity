@@ -121,7 +121,7 @@ static void SetConfFileEntry(const std::string& entry, const T& value)
 
 -----------------------------------------------------------------------------*/
 
-int IniInt (char* entry)
+int IniInt (const char* entry)
 {
 
 #ifdef WINDOWS
@@ -139,7 +139,7 @@ int IniInt (char* entry)
 
 -----------------------------------------------------------------------------*/
 
-void IniIntSet (char* entry, int val)
+void IniIntSet (const char* entry, int val)
 {
 
 #ifdef WINDOWS
@@ -157,7 +157,7 @@ void IniIntSet (char* entry, int val)
 
 -----------------------------------------------------------------------------*/
 
-float IniFloat (char* entry)
+float IniFloat (const char* entry)
 {
 
 #ifdef WINDOWS
@@ -176,7 +176,7 @@ float IniFloat (char* entry)
 
 -----------------------------------------------------------------------------*/
 
-void IniFloatSet (char* entry, float val)
+void IniFloatSet (const char* entry, float val)
 {
 
 #ifdef WINDOWS
@@ -195,7 +195,7 @@ void IniFloatSet (char* entry, float val)
 
 -----------------------------------------------------------------------------*/
 
-char* IniString (char* entry)
+char* IniString (const char* entry)
 {
 
 #ifdef WINDOWS
@@ -217,7 +217,7 @@ char* IniString (char* entry)
 
 -----------------------------------------------------------------------------*/
 
-void IniStringSet (char* entry, char* val)
+void IniStringSet (const char* entry, char* val)
 {
 
 #ifdef WINDOWS
@@ -233,7 +233,7 @@ void IniStringSet (char* entry, char* val)
 
 -----------------------------------------------------------------------------*/
 
-void IniVectorSet (char* entry, GLvector v)
+void IniVectorSet (const char* entry, GLvector v)
 {
 
 #ifdef WINDOWS
@@ -249,7 +249,7 @@ void IniVectorSet (char* entry, GLvector v)
 
 -----------------------------------------------------------------------------*/
 
-GLvector IniVector (char* entry)
+GLvector IniVector (const char* entry)
 {
 
 #if WINDOWS

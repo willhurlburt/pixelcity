@@ -52,7 +52,7 @@
 #include "Win.h"
 #include "time_util.h"
 
-static char*        prefix[] = 
+static const char*        prefix[] = 
 {
   "i", 
   "Green ",
@@ -79,7 +79,7 @@ static char*        prefix[] =
   "National ",
 };
 
-static char*        name[] = 
+static const char*        name[] = 
 {
   "Biotic",
   "Info",
@@ -116,7 +116,7 @@ static char*        name[] =
   "Studios",
 };
 
-static char*        suffix[] = 
+static const char*        suffix[] = 
 {
   "Corp",
   " Inc.",

@@ -96,7 +96,7 @@ static char             help[] =
 
 struct glFont
 {
-  char*         name;
+  const char*         name;
   unsigned		  base_char;
 } fonts[] = 
 {
