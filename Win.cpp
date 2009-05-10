@@ -512,10 +512,12 @@ int main()
 
   while (!quit) {
     /* TODO: use ConnectionNumber(dpy) to get an FD and do my own select loop */
-    while(XEventsQueued(dpy, QueuedAfterReading)) {
-      XNextEvent(dpy, &report);
-      WinHandleEvent(report);
-    };
+    if(XEventsQueued(dpy, QueuedAfterFlush)) {
+      while(XEventsQueued(dpy, QueuedAfterReading)) {
+        XNextEvent(dpy, &report);
+        WinHandleEvent(report);
+      };
+    }
 
     AppUpdate ();
   }
