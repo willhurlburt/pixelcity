@@ -110,15 +110,17 @@ struct cell
   GLvector        pos;
 };
 
-static cell                cell_list[GRID_SIZE][GRID_SIZE];
-static std::vector<entity> entity_list;
-static bool                sorted;
-static bool                compiled;
-static int                 polycount;
-static int                 compile_x;
-static int                 compile_y;
-static int                 compile_count;
-static int                 compile_end;
+typedef std::vector<entity> ent_list_t;
+
+static cell       cell_list[GRID_SIZE][GRID_SIZE];
+static ent_list_t entity_list;
+static bool       sorted;
+static bool       compiled;
+static int        polycount;
+static int        compile_x;
+static int        compile_y;
+static int        compile_count;
+static int        compile_end;
 
 /*-----------------------------------------------------------------------------
 
@@ -161,8 +163,8 @@ void add (CEntity* b)
 static void do_compile ()
 {
 
-  std::vector<entity>::iterator i;
-  int                           x, y;
+  ent_list_t::iterator i;
+  int                x, y;
 
   if (compiled)
     return;
@@ -421,7 +423,7 @@ int EntityPolyCount (void)
     return 0;
   if (polycount)
     return polycount;
-  for (std::vector<entity>::iterator i = entity_list.begin(); i < entity_list.end(); ++i) 
+  for (ent_list_t::iterator i = entity_list.begin(); i < entity_list.end(); ++i) 
     polycount += (*i)->PolyCount ();
   return polycount;
 
