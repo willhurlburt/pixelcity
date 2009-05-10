@@ -18,7 +18,10 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+#include <X11/Xatom.h>
 #include <GL/glx.h>
+
+#include <algorithm>
 #endif
 
 #include <math.h>
@@ -760,6 +763,8 @@ bool WinInit (void)
   XEvent event;
   Window root;
   XColor white, black;
+  XTextProperty name;
+  const char *str_name = APP_TITLE;
 
   dpy = XOpenDisplay(NULL);  // use $DISPLAY
 
@@ -787,7 +792,14 @@ bool WinInit (void)
   wnd = XCreateWindow(dpy, root, 0, 0, 640, 480, 0, vis->depth,
       InputOutput, vis->visual, CWEventMask | CWColormap, &swa);
 
-  XSetStandardProperties(dpy, wnd, "pixelcity", NULL, None, (char **)NULL, 0, NULL);
+  name.encoding = XA_STRING;
+  name.format = 8;  // bits per character
+  name.nitems = sizeof(APP_TITLE) - 1;
+  name.value = new unsigned char[sizeof(APP_TITLE)];
+
+  std::copy(str_name, str_name + sizeof(APP_TITLE), name.value);
+  XSetWMName(dpy, wnd, &name);
+  delete[] name.value;
 
   XMapWindow(dpy, wnd);
 
