@@ -760,6 +760,8 @@ bool WinInit (void)
   wnd = XCreateWindow(dpy, root, 0, 0, 640, 480, 0, vis->depth,
       InputOutput, vis->visual, CWEventMask | CWColormap, &swa);
 
+  XSetStandardProperties(dpy, wnd, "pixelcity", NULL, None, (char **)NULL, 0, NULL);
+
   XMapWindow(dpy, wnd);
 
   /* wait for it to appear: glXMakeCurrent may require it to be visible. */
