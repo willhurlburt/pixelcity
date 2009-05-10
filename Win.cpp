@@ -731,8 +731,7 @@ bool WinInit (void)
 #else  /* !WINDOWS */
 
   int attrs[] = {GLX_RGBA, GLX_DOUBLEBUFFER, GLX_RED_SIZE, 8,
-    GLX_GREEN_SIZE, 8, GLX_BLUE_SIZE, 8, GLX_DEPTH_SIZE, 1,
-    GLX_AUX_BUFFERS, 1, None};
+    GLX_GREEN_SIZE, 8, GLX_BLUE_SIZE, 8, GLX_DEPTH_SIZE, 1, None};
   XSetWindowAttributes swa;
   XEvent event;
   Window root;
