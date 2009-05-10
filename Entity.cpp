@@ -35,27 +35,69 @@
 #include "Win.h"
 #include "time_util.h"
 
-struct entity
+class entity
 {
-  CEntity*            object;
+  private:
 
-  entity() : object(NULL) {};
-  entity(CEntity* o) : object(o) {};
+  class RefCounter {
+    public:
+      RefCounter(CEntity* o) : _obj(o), _refs(1) {};
+      ~RefCounter() {delete _obj;};
 
-  entity(const entity& rhs) : object(rhs.object) {};
+      void AddRef() {_refs++;};
+      void Release() {if (--_refs == 0) delete this;};
+
+      CEntity& operator*() const {return *_obj;};
+      CEntity* operator->() const {return _obj;};
+      operator bool() const {return (!!_obj);};
+
+    private:
+      CEntity* _obj;
+      int      _refs;
+
+      // not callable
+      RefCounter() : _obj(NULL) {};
+      RefCounter(const RefCounter& rhs) : _obj(NULL) {};
+      RefCounter& operator=(const RefCounter& rhs) {return *this;};
+  };
+
+  public:
+  entity() {rc = NULL;};
+  entity(CEntity* o) : rc(new RefCounter(o)) {};
+  entity(const entity& rhs) : rc(rhs.rc) {if(rc) rc->AddRef();};
+  ~entity() {rc->Release();}
+
   entity& operator=(const entity& rhs) {
-    object = rhs.object;
+    if(rc)
+      rc->Release();
+
+    rc = rhs.rc;
+
+    if(rc)
+      rc->AddRef();
+
     return *this;
   };
 
+  CEntity& operator*() { return **rc; };
+  RefCounter& operator->() { return *rc; };
+
   bool operator<(const entity& rhs) const {
-    if (this->object->Alpha () && !rhs.object->Alpha ())
+    if(!rhs.rc)
       return true;
-    if (!this->object->Alpha () && rhs.object->Alpha ())
+    if(!rc)
       return false;
 
-    return this->object->Texture () < rhs.object->Texture ();
+    if ((*rc)->Alpha () && !(*rhs.rc)->Alpha ())
+      return true;
+    if (!(*rc)->Alpha () && (*rhs.rc)->Alpha ())
+      return false;
+
+    return (*rc)->Texture () < (*rhs.rc)->Texture ();
   };
+
+  private:
+  RefCounter *rc;
 };
 
 
@@ -137,10 +179,10 @@ static void do_compile ()
   glNewList (cell_list[x][y].list_textured, GL_COMPILE);
   cell_list[x][y].pos = glVector (GRID_TO_WORLD(x), 0.0f, (float)y * GRID_RESOLUTION);
   for (i = entity_list.begin(); i < entity_list.end(); ++i) {
-    GLvector pos = i->object->Center ();
-    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && !i->object->Alpha ()) {
-      glBindTexture(GL_TEXTURE_2D, i->object->Texture ());
-      i->object->Render ();
+    GLvector pos = (*i)->Center ();
+    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && !(*i)->Alpha ()) {
+      glBindTexture(GL_TEXTURE_2D, (*i)->Texture ());
+      (*i)->Render ();
     }
   }
   glEndList();	
@@ -152,9 +194,9 @@ static void do_compile ()
   glEnable (GL_CULL_FACE);
   cell_list[x][y].pos = glVector (GRID_TO_WORLD(x), 0.0f, (float)y * GRID_RESOLUTION);
   for (i = entity_list.begin(); i < entity_list.end(); ++i) {
-    GLvector pos = i->object->Center ();
-    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && !i->object->Alpha ()) {
-      i->object->RenderFlat (false);
+    GLvector pos = (*i)->Center ();
+    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && !(*i)->Alpha ()) {
+      (*i)->RenderFlat (false);
     }
   }
   glEndList();	
@@ -165,9 +207,9 @@ static void do_compile ()
   glEnable (GL_CULL_FACE);
   cell_list[x][y].pos = glVector (GRID_TO_WORLD(x), 0.0f, (float)y * GRID_RESOLUTION);
   for (i = entity_list.begin(); i < entity_list.end(); ++i) {
-    GLvector pos = i->object->Center ();
-    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && !i->object->Alpha ()) {
-      i->object->RenderFlat (true);
+    GLvector pos = (*i)->Center ();
+    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && !(*i)->Alpha ()) {
+      (*i)->RenderFlat (true);
     }
   }
   glEndList();	
@@ -180,10 +222,10 @@ static void do_compile ()
   glEnable (GL_BLEND);
   glDisable (GL_CULL_FACE);
   for (i = entity_list.begin(); i < entity_list.end(); ++i) {
-    GLvector pos = i->object->Center ();
-    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && i->object->Alpha ()) {
-      glBindTexture(GL_TEXTURE_2D, i->object->Texture ());
-      i->object->Render ();
+    GLvector pos = (*i)->Center ();
+    if (WORLD_TO_GRID(pos.x) == x && WORLD_TO_GRID(pos.z) == y && (*i)->Alpha ()) {
+      glBindTexture(GL_TEXTURE_2D, (*i)->Texture ());
+      (*i)->Render ();
     }
   }
   glDepthMask (true);
@@ -322,8 +364,6 @@ void EntityRender ()
 void EntityClear ()
 {
 
-  for(std::vector<entity>::iterator i = entity_list.begin(); i < entity_list.end(); ++i)
-    delete i->object;
   entity_list.clear();
 
   compile_x = 0;
@@ -382,7 +422,7 @@ int EntityPolyCount (void)
   if (polycount)
     return polycount;
   for (std::vector<entity>::iterator i = entity_list.begin(); i < entity_list.end(); ++i) 
-    polycount += i->object->PolyCount ();
+    polycount += (*i)->PolyCount ();
   return polycount;
 
 }
