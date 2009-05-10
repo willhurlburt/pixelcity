@@ -142,9 +142,10 @@ static void CenterCursor ()
   center_y = rect.top + (rect.bottom - rect.top) / 2;
   SetCursorPos (center_x, center_y);
 #else
-  //mouse_forced = true;
+  mouse_forced = true;
 
-  /*XWarpPointer(dpy, None, wnd, 0, 0, 0, 0, width / 2, height / 2);*/
+  XWarpPointer(dpy, None, wnd, 0, 0, 0, 0, width / 2, height / 2);
+  XFlush(dpy);
 #endif
 
 }
@@ -168,9 +169,10 @@ static void MoveCursor (int x, int y)
   center_y = rect.top + y;
   SetCursorPos (center_x, center_y);
 #else
-  //mouse_forced = true;
+  mouse_forced = true;
 
-  /*XWarpPointer(dpy, None, wnd, 0, 0, 0, 0, x, y);*/
+  XWarpPointer(dpy, None, wnd, 0, 0, 0, 0, x, y);
+  XFlush(dpy);
 #endif
 
 }
