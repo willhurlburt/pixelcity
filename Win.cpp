@@ -553,7 +553,7 @@ void WinHandleEvent(XEvent evt)
     case KeyPress:
       key = XLookupKeysym(&evt.xkey, 0);
 
-      if (key == XK_R || key == XK_r)
+      if (key == XK_r)
         WorldReset(); 
       else if (key == XK_w)
         RenderWireframeToggle ();
