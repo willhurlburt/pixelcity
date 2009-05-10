@@ -26,6 +26,8 @@
 #include <windows.h>
 #endif
 
+#include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <time.h>
 #include <stdarg.h>
@@ -94,7 +96,7 @@ static char             help[] =
 
 struct glFont
 {
-  char*         name;
+  const char*   name;
   unsigned		  base_char;
 } fonts[] = 
 {
