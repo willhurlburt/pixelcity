@@ -366,6 +366,12 @@ void CameraInit (void)
   angle = IniVector ("CameraAngle");
   position = IniVector ("CameraPosition");
 
+  GLvector zero = {0.0f, 0.0f, 0.0f};
+  if(position == zero && angle == zero) {
+    // first run through the program: reset
+    CameraReset();
+  }
+
 }
 
 /*-----------------------------------------------------------------------------
