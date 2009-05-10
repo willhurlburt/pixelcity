@@ -67,6 +67,24 @@ static Display     *dpy;
 static XVisualInfo *vis;
 static Window      wnd;
 static Atom        del_atom;
+
+static Cursor      blank;
+
+#define blank_width 8
+#define blank_height 8
+#define blank_x_hot 0
+#define blank_y_hot 0
+static char blank_bits[] = {
+  0x00,
+  0x00,
+  0x00,
+  0x00,
+  0x00,
+  0x00,
+  0x00,
+  0x00
+};   // mask is the same bit pattern
+
 #endif
 
 static int          width;
@@ -223,6 +241,7 @@ void WinTerm (void)
   DestroyWindow (hwnd);
 #endif
 #else
+  XFreeCursor(dpy, blank);
   XDestroyWindow(dpy, wnd);
   XFree(vis);
   XCloseDisplay(dpy);
@@ -604,11 +623,10 @@ void WinHandleEvent(XEvent evt)
       else
         break;
 
-      /* don't actually grab the pointer: x11 does it for us, more or less.  works for now.
       if((lmb && !rmb) || (!lmb && rmb))
-        XGrabPointer(dpy, wnd, False, PointerMotionMask | ButtonMotionMask,
-            GrabModeSync, GrabModeAsync, None, None, evt.xbutton.time);
-      */
+        XGrabPointer(dpy, wnd, False, PointerMotionMask | ButtonMotionMask |
+            ButtonPressMask | ButtonReleaseMask, GrabModeAsync, GrabModeAsync,
+            None, blank, evt.xbutton.time);
       break;
     case ButtonRelease:
       if(evt.xbutton.button == Button1)
@@ -619,7 +637,7 @@ void WinHandleEvent(XEvent evt)
         break;
 
       if(!lmb && !rmb) {
-        //XUngrabPointer(dpy, evt.xbutton.time);
+        XUngrabPointer(dpy, evt.xbutton.time);
         MoveCursor(select_pos.x, select_pos.y);
       }
       break;
@@ -739,6 +757,7 @@ bool WinInit (void)
   XSetWindowAttributes swa;
   XEvent event;
   Window root;
+  XColor white, black;
 
   dpy = XOpenDisplay(NULL);  // use $DISPLAY
 
@@ -760,6 +779,9 @@ bool WinInit (void)
   swa.event_mask = StructureNotifyMask | ButtonPressMask | ButtonReleaseMask |
     KeyPressMask | ButtonMotionMask | PointerMotionMask;
 
+  XParseColor(dpy, swa.colormap, "rgb:0/0/0", &black);
+  XParseColor(dpy, swa.colormap, "rgb:ffff/ffff/ffff", &white);
+
   wnd = XCreateWindow(dpy, root, 0, 0, 640, 480, 0, vis->depth,
       InputOutput, vis->visual, CWEventMask | CWColormap, &swa);
 
@@ -773,6 +795,11 @@ bool WinInit (void)
   del_atom = XInternAtom(dpy, "WM_DELETE_WINDOW", True);
   if(del_atom != None)
     XSetWMProtocols(dpy, wnd, &del_atom, 1);
+
+  /* now build the blank cursor we use when grabbing the pointer */
+  Pixmap pm = XCreateBitmapFromData(dpy, wnd, blank_bits, blank_width, blank_height);
+  blank = XCreatePixmapCursor(dpy, pm, pm, &black, &white, blank_x_hot, blank_y_hot);
+  XFreePixmap(dpy, pm);
 
   return true;
 
