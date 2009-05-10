@@ -754,7 +754,8 @@ bool WinInit (void)
   }
 
   swa.colormap = XCreateColormap(dpy, root, vis->visual, AllocNone);
-  swa.event_mask = StructureNotifyMask | ButtonMotionMask | PointerMotionMask;
+  swa.event_mask = StructureNotifyMask | ButtonPressMask | ButtonReleaseMask |
+    KeyPressMask | ButtonMotionMask | PointerMotionMask;
 
   wnd = XCreateWindow(dpy, root, 0, 0, 640, 480, 0, vis->depth,
       InputOutput, vis->visual, CWEventMask | CWColormap, &swa);
