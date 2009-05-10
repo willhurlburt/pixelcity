@@ -124,9 +124,9 @@ static void CenterCursor ()
   center_y = rect.top + (rect.bottom - rect.top) / 2;
   SetCursorPos (center_x, center_y);
 #else
-  mouse_forced = true;
+  //mouse_forced = true;
 
-  /*XWarpPointer(dpy, ...);*/
+  /*XWarpPointer(dpy, None, wnd, 0, 0, 0, 0, width / 2, height / 2);*/
 #endif
 
 }
@@ -150,9 +150,9 @@ static void MoveCursor (int x, int y)
   center_y = rect.top + y;
   SetCursorPos (center_x, center_y);
 #else
-  mouse_forced = true;
+  //mouse_forced = true;
 
-  /*XWarpPointer(dpy, ...);*/
+  /*XWarpPointer(dpy, None, wnd, 0, 0, 0, 0, x, y);*/
 #endif
 
 }
@@ -511,6 +511,7 @@ int main()
   AppInit();
 
   while (!quit) {
+    /* TODO: use ConnectionNumber(dpy) to get an FD and do my own select loop */
     while(XEventsQueued(dpy, QueuedAfterReading)) {
       XNextEvent(dpy, &report);
       WinHandleEvent(report);
@@ -595,60 +596,61 @@ void WinHandleEvent(XEvent evt)
         break;
     case ButtonPress:
       if(evt.xbutton.button == Button1)
-        lmb = 1;
-      else if(evt.xbutton.button == Button2)
-        rmb = 1;
+        lmb = true;
+      else if(evt.xbutton.button == Button3)
+        rmb = true;
       else
         break;
 
+      /* don't actually grab the pointer: x11 does it for us, more or less.  works for now.
       if((lmb && !rmb) || (!lmb && rmb))
         XGrabPointer(dpy, wnd, False, PointerMotionMask | ButtonMotionMask,
             GrabModeSync, GrabModeAsync, None, None, evt.xbutton.time);
+      */
       break;
     case ButtonRelease:
       if(evt.xbutton.button == Button1)
-        lmb = 0;
-      else if(evt.xbutton.button == Button2)
-        rmb = 0;
+        lmb = false;
+      else if(evt.xbutton.button == Button3)
+        rmb = false;
       else
         break;
 
       if(!lmb && !rmb) {
-        XUngrabPointer(dpy, evt.xbutton.time);
+        //XUngrabPointer(dpy, evt.xbutton.time);
         MoveCursor(select_pos.x, select_pos.y);
       }
       break;
     case MotionNotify:
-      p.x = evt.xmotion.x_root;
-      p.y = evt.xmotion.y_root;
-      buttons = evt.xmotion.state & (Button1 | Button2);
+      p.x = evt.xmotion.x;
+      p.y = evt.xmotion.y;
+      buttons = evt.xmotion.state & (Button1Mask | Button3Mask);
 
       if (p.x < 0 || p.x > width)
         break;
       if (p.y < 0 || p.y > height)
         break;
 
-      if (!mouse_forced && !lmb && !rmb) {
+      if (!mouse_forced && !buttons) {
         select_pos = p; 
-      }
-      if (mouse_forced) {
+      } else if (mouse_forced) {
         mouse_forced = false;
-      } else if (buttons) {
+      } else /* buttons */ {
         CenterCursor ();
         delta_x = (float)(mouse_pos.x - p.x) * MOUSE_MOVEMENT;
         delta_y = (float)(mouse_pos.y - p.y) * MOUSE_MOVEMENT;
 
-        if(buttons == (Button1 | Button2)) {
+        if(buttons == (Button1Mask | Button3Mask)) {
           GLvector pos;
 
           CameraPan(delta_x);
           pos = CameraPosition();
           pos.y += delta_y;
           CameraPositionSet(pos);
-        } else if(buttons == Button2) {
+        } else if(buttons == Button3Mask) {
           CameraPan(delta_x);
           CameraForward(delta_y);
-        } else if(buttons == Button1) {
+        } else if(buttons == Button1Mask) {
           GLvector angle = CameraAngle();
 
           angle.y -= delta_x;
