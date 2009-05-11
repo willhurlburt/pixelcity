@@ -20,8 +20,6 @@
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
 #include <GL/glx.h>
-
-#include <algorithm>
 #endif
 
 #include <math.h>
@@ -87,6 +85,8 @@ static char blank_bits[] = {
   0x00,
   0x00
 };   // mask is the same bit pattern
+
+static void WinHandleEvent(XEvent evt);
 
 #endif
 
@@ -551,7 +551,7 @@ int main()
   return 0;
 }
 
-void WinHandleEvent(XEvent evt)
+static void WinHandleEvent(XEvent evt)
 {
   POINT p;
   float delta_x, delta_y;
@@ -690,14 +690,14 @@ void WinHandleEvent(XEvent evt)
       break;
     case ClientMessage:
       /* message from another client; here, likely the WM */
-      if((Atom)evt.xclient.data.l[0] == del_atom)
+      if(reinterpret_cast<Atom>(evt.xclient.data.l[0]) == del_atom)
         AppQuit();
       break;
   }
 }
 
 static Bool WaitForNotify(Display *dpy, XEvent *event, XPointer arg) {
-  return (event->type == MapNotify) && (event->xmap.window == (Window)arg);
+  return (event->type == MapNotify) && (event->xmap.window == reinterpret_cast<Window>(arg));
 }
 
 #endif  /* !WINDOWS */
@@ -762,9 +762,9 @@ bool WinInit (void)
   XSetWindowAttributes swa;
   XEvent event;
   Window root;
-  XColor white, black;
+  XColor black;
   XTextProperty name;
-  const char *str_name = APP_TITLE;
+  unsigned char str_name[] = APP_TITLE;
 
   dpy = XOpenDisplay(NULL);  // use $DISPLAY
 
@@ -787,7 +787,6 @@ bool WinInit (void)
     KeyPressMask | ButtonMotionMask | PointerMotionMask;
 
   XParseColor(dpy, swa.colormap, "rgb:0/0/0", &black);
-  XParseColor(dpy, swa.colormap, "rgb:ffff/ffff/ffff", &white);
 
   wnd = XCreateWindow(dpy, root, 0, 0, 640, 480, 0, vis->depth,
       InputOutput, vis->visual, CWEventMask | CWColormap, &swa);
@@ -795,16 +794,14 @@ bool WinInit (void)
   name.encoding = XA_STRING;
   name.format = 8;  // bits per character
   name.nitems = sizeof(APP_TITLE) - 1;
-  name.value = new unsigned char[sizeof(APP_TITLE)];
+  name.value = str_name;
 
-  std::copy(str_name, str_name + sizeof(APP_TITLE), name.value);
   XSetWMName(dpy, wnd, &name);
-  delete[] name.value;
 
   XMapWindow(dpy, wnd);
 
   /* wait for it to appear: glXMakeCurrent may require it to be visible. */
-  XIfEvent(dpy, &event, WaitForNotify, (XPointer)wnd);
+  XIfEvent(dpy, &event, WaitForNotify, reinterpret_cast<XPointer>(wnd));
 
   del_atom = XInternAtom(dpy, "WM_DELETE_WINDOW", True);
   if(del_atom != None)
@@ -812,7 +809,7 @@ bool WinInit (void)
 
   /* now build the blank cursor we use when grabbing the pointer */
   Pixmap pm = XCreateBitmapFromData(dpy, wnd, blank_bits, blank_width, blank_height);
-  blank = XCreatePixmapCursor(dpy, pm, pm, &black, &white, blank_x_hot, blank_y_hot);
+  blank = XCreatePixmapCursor(dpy, pm, pm, &black, &black, blank_x_hot, blank_y_hot);
   XFreePixmap(dpy, pm);
 
   return true;

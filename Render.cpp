@@ -820,7 +820,6 @@ void RenderUpdate (void)
 #ifdef WINDOWS
     SwapBuffers (hDC);
 #else
-    //glFlush();  // ???
     glXSwapBuffers(WinGetDisplay(), WinGetWindow());
 #endif
     return;
@@ -901,7 +900,6 @@ void RenderUpdate (void)
 #ifdef WINDOWS
   SwapBuffers (hDC);
 #else
-  //glFlush();  // ???
   glXSwapBuffers(WinGetDisplay(), WinGetWindow());
 #endif
 

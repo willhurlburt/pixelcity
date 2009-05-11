@@ -55,7 +55,6 @@ void  WinPopup (char* message, ...);
 Display     *WinGetDisplay();
 XVisualInfo *WinGetVisual();
 Window      WinGetWindow();
-void        WinHandleEvent(XEvent evt);
 #endif
 
 void  WinTerm (void);
