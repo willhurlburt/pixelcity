@@ -20,6 +20,13 @@
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
 #include <GL/glx.h>
+
+#include <sys/select.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <signal.h>
+#include <errno.h>
 #endif
 
 #include <math.h>
@@ -525,17 +532,60 @@ LONG WINAPI ScreenSaverProc(HWND hwnd_in,UINT message,WPARAM wparam,LPARAM lpara
 
 #else   /* !WINDOWS */
 
+/* I would just use timerfd_*(), but that's sadly not very portable.  It's only
+ * fairly recent, too (2.6.25 kernels and newer).  So, the old self-pipe trick. */
+int pipe_fds[2];
+
+static void handle_alarm(int signum)
+{
+  write(pipe_fds[1], "\0", 1);
+}
+
+static void SetupEventLoopSupport(int *x11_fd, int *fd_count, struct itimerval *tv)
+{
+  *x11_fd = ConnectionNumber(dpy);
+  pipe(pipe_fds);
+
+  *fd_count = MAX(*x11_fd, pipe_fds[0]);
+
+  tv->it_interval.tv_sec = 0;
+  tv->it_interval.tv_usec = 16666;  /* 60 fps max */
+  tv->it_value = tv->it_interval;
+
+  signal(SIGALRM, handle_alarm);
+}
+
+static void TeardownEventLoopSupport()
+{
+  /* cancel timer first, so it doesn't deliver any more signals */
+  setitimer(ITIMER_REAL, NULL, NULL);
+
+  /* cancel alarm handler second */
+  signal(SIGALRM, SIG_DFL);
+
+  close(pipe_fds[0]);
+  close(pipe_fds[1]);
+}
+
 int main()
 {
   XEvent report;
+  struct itimerval tv;
+  int x11_fd, fd_count, rv;
+  fd_set readfds;
+  char buf[4096];
 
   if(!WinInit())
     return 1;
 
   AppInit();
 
-  while (!quit) {
-    /* TODO: use ConnectionNumber(dpy) to get an FD and do my own select loop */
+  SetupEventLoopSupport(&x11_fd, &fd_count, &tv);
+
+  /* Well, apparently if you don't call AppUpdate() fast enough during setup,
+   * the program isn't able to properly build the bloom lighting texture (and
+   * maybe also other random things).  So, give it a separate loop, I suppose. */
+  while(!quit && !EntityReady()) {
     if(XEventsQueued(dpy, QueuedAfterFlush)) {
       while(XEventsQueued(dpy, QueuedAfterReading)) {
         XNextEvent(dpy, &report);
@@ -543,8 +593,61 @@ int main()
       };
     }
 
-    AppUpdate ();
+    AppUpdate();
   }
+
+  /* Quits should still work from the loading screen. */
+  if(quit) {
+    AppTerm();
+    return 0;
+  }
+
+  /* This sets up the framerate-cap/cpu-usage-limiter alarm.  General idea is
+   * that this alarm fires every so often (see SetupEventLoopSupport() above
+   * for the FPS, expressed as the timer's period in microseconds).  When the
+   * timer fires, it calls the handle_alarm function above, which writes one
+   * byte into the anonymous pipe.  That wakes up select() (on the read end of
+   * that anonymous pipe) the next time it gets gets called.  (The signal wakes
+   * up select() too, but there are races if we rely on that.)  When select sees
+   * that its source was the pipe, it skips the X11 stuff, and only then calls
+   * AppUpdate(). */
+  setitimer(ITIMER_REAL, &tv, NULL);
+
+  while (!quit) {
+    FD_ZERO(&readfds);
+    FD_SET(x11_fd, &readfds);
+    FD_SET(pipe_fds[0], &readfds);
+
+    XFlush(dpy);
+
+    rv = select(fd_count + 1, &readfds, NULL, NULL, NULL);
+
+    if(rv == -1 && errno == EINTR)
+      continue;
+
+    if(rv < 0) {
+      int save_errno = errno;
+
+      std::cerr << "select() returned error: " << strerror(save_errno) << std::endl;
+      AppTerm();
+      return 1;
+    }
+
+    if(FD_ISSET(x11_fd, &readfds)) {
+      while(XEventsQueued(dpy, QueuedAfterReading)) {
+        XNextEvent(dpy, &report);
+        WinHandleEvent(report);
+      };
+    }
+
+    if(FD_ISSET(pipe_fds[0], &readfds)) {
+      read(pipe_fds[0], buf, sizeof(buf));
+
+      AppUpdate();
+    }
+  }
+
+  TeardownEventLoopSupport();
 
   AppTerm();
 
