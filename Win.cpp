@@ -690,7 +690,7 @@ static void WinHandleEvent(XEvent evt)
       break;
     case ClientMessage:
       /* message from another client; here, likely the WM */
-      if(reinterpret_cast<Atom>(evt.xclient.data.l[0]) == del_atom)
+      if(static_cast<Atom>(evt.xclient.data.l[0]) == del_atom)
         AppQuit();
       break;
   }
