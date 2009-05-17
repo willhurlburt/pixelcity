@@ -44,7 +44,7 @@ private:
 
 public:
                           CBuilding (int type, int x, int y, int height, int width, int depth, int seed, GLrgba color);
-                          ~CBuilding ();
+  virtual                 ~CBuilding ();
   void                    Render (void);
   int                     PolyCount ();
   void                    RenderFlat (bool colored);
