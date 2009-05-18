@@ -46,9 +46,6 @@
 #include <fontconfig/fcfreetype.h>
 
 #include <errno.h>
-
-#include <sstream>
-#include <vector>
 #endif
 
 #include "glTypes.h"
