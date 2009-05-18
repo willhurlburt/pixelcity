@@ -420,7 +420,7 @@ static void do_reset (void)
   float     west_street, north_street, east_street, south_street;
 
   //Re-init Random to make the same city each time. Helpful when running tests.
-  RandomInit (6);
+  //RandomInit (6);
   reset_needed = false;
   broadway_done = false;
   skyscrapers = 0;

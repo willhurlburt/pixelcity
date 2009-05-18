@@ -12,7 +12,7 @@
 #define VERSION_MINOR       0
 #define VERSION_REVISION    10
 //Best to disable screensaver mode when working on the program.
-#define SCREENSAVER         0
+#define SCREENSAVER         1
 //Do we hide scene building behing a loading screen or show it?
 #define LOADING_SCREEN      1
 //Controls the density of cars.
