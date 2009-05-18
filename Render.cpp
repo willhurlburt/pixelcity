@@ -666,12 +666,9 @@ static bool RenderLoadFonts(Display *dpy, Visual *vis)
 
     FcPatternDestroy(font);
 
-    //err = FT_Set_Char_Size(face,
-    //    FONT_SIZE*64, 0,  // width, height (in points)
-    //    72, 72);          // x, y dpi
-    err = FT_Set_Pixel_Sizes(face,
-        FONT_SIZE,
-        FONT_SIZE);
+    err = FT_Set_Char_Size(face,
+        FONT_SIZE*64, 0,  // width, height (in points)
+        72, 72);          // x, y dpi
 
     if(err) {
       std::cerr << "Can't set char size; face = '" << fonts[i].name << "'.  err: " << err << "\n";
