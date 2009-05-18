@@ -40,7 +40,6 @@
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
-#include <X11/Xft/Xft.h>
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <fontconfig/fontconfig.h>
@@ -573,7 +572,7 @@ static bool RenderLoadFonts(Display *dpy, Visual *vis)
   bool         del_face;
   GLubyte      *bits;
   GLint        alignment;
-  XftChar8     str[96];
+  char         str[96];
 
   if((err = FT_Init_FreeType(&lib))) {
     std::cerr << "FT_Init_Freetype() failed: " << err << ".\n";
@@ -588,7 +587,7 @@ static bool RenderLoadFonts(Display *dpy, Visual *vis)
   glGetIntegerv(GL_UNPACK_ALIGNMENT, &alignment);
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-  for(XftChar8 j = 0; j < 96; j++)
+  for(int j = 0; j < 96; j++)
     str[j] = j+32;
 
   for(unsigned int i = 0; i < FONT_COUNT; i++) {
