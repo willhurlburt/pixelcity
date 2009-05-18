@@ -40,7 +40,16 @@
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
+#include <X11/Xft/Xft.h>
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include <fontconfig/fontconfig.h>
+#include <fontconfig/fcfreetype.h>
+
 #include <errno.h>
+
+#include <sstream>
+#include <vector>
 #endif
 
 #include "glTypes.h"
@@ -552,6 +561,174 @@ void RenderTerm (void)
 
 -----------------------------------------------------------------------------*/
 
+#ifndef WINDOWS
+
+static bool RenderLoadFonts(Display *dpy, Visual *vis)
+{
+  FT_Error     err;
+  FT_Library   lib;
+  FcPattern    *pattern, *font;
+  FT_Face      face;
+  FcResult     res;
+  bool         del_face;
+  GLubyte      *bits;
+  GLint        alignment;
+  XftChar8     str[96];
+
+  if((err = FT_Init_FreeType(&lib))) {
+    std::cerr << "FT_Init_Freetype() failed: " << err << ".\n";
+    return false;
+  }
+
+  if(!FcInit()) {
+    std::cerr << "FcInit() failed: " << strerror(errno) << "\n";
+    return false;
+  }
+
+  glGetIntegerv(GL_UNPACK_ALIGNMENT, &alignment);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+  for(XftChar8 j = 0; j < 96; j++)
+    str[j] = j+32;
+
+  for(unsigned int i = 0; i < FONT_COUNT; i++) {
+    pattern = FcPatternBuild(NULL,
+        FC_FAMILY, FcTypeString, fonts[i].name,
+        FC_SIZE, FcTypeDouble, static_cast<double>(FONT_SIZE),
+        FC_WEIGHT, FcTypeInteger, FC_WEIGHT_BOLD,
+        (char *)0);
+
+    if(!pattern) {
+      std::cerr << "FcPatternBuild returned null; face = '" << fonts[i].name << "'...\n";
+      return false;
+    }
+
+    if(!FcConfigSubstitute(NULL, pattern, FcMatchPattern)) {
+      std::cerr << "FcConfigSubstitute failed; face = '" << fonts[i].name << "'...\n";
+      return false;
+    }
+
+    FcDefaultSubstitute(pattern);
+    res = FcResultMatch;   // grrr, stupid convention...
+    font = FcFontMatch(NULL, pattern, &res);
+
+    if(res != FcResultMatch) {
+      std::cerr << "Couldn't match font; face = '" << fonts[i].name << "'.  Val: " << res << "\n";
+      return false;
+    }
+
+    FcPatternDestroy(pattern);
+
+    res = FcPatternGetFTFace(font, FC_FT_FACE, 0, &face);
+
+    if(res == FcResultNoMatch) {
+      // sigh; apparently it often (always?) fails to load the FT_Face?  do it manually.
+      FcChar8 *filename;
+      int     face_index;
+
+      res = FcPatternGetString(font, FC_FILE, 0, &filename);
+
+      if(res != FcResultMatch) {
+        std::cerr << "Couldn't get font filename; face = '" << fonts[i].name << "'. Val: " << res;
+        return false;
+      }
+
+      res = FcPatternGetInteger(font, FC_INDEX, 0, &face_index);
+
+      if(res != FcResultMatch) {
+        std::cerr << "Couldn't get font index; face = '" << fonts[i].name << "'. Val: " << res;
+        return false;
+      }
+
+      // grrr, "char" vs. "unsigned char"
+      err = FT_New_Face(lib, reinterpret_cast<char*>(filename), face_index, &face);
+
+      if(err) {
+        std::cerr << "Couldn't load font " << filename << "; err = " << err << "\n";
+        return false;
+      }
+
+      del_face = true;
+    }
+    else if(res != FcResultMatch) {
+      std::cerr << "Couldn't get FT_Face; face = '" << fonts[i].name << "'.  Error: ";
+
+      if(res == FcResultTypeMismatch)
+        std::cerr << "type mismatch\n";
+      else if(res == FcResultNoId)
+        std::cerr << "no ID\n";
+
+      return false;
+    }
+    else {
+      del_face = false;
+    }
+
+    FcPatternDestroy(font);
+
+    //err = FT_Set_Char_Size(face,
+    //    FONT_SIZE*64, 0,  // width, height (in points)
+    //    72, 72);          // x, y dpi
+    err = FT_Set_Pixel_Sizes(face,
+        FONT_SIZE,
+        FONT_SIZE);
+
+    if(err) {
+      std::cerr << "Can't set char size; face = '" << fonts[i].name << "'.  err: " << err << "\n";
+      return false;
+    }
+
+    fonts[i].base_char = glGenLists(96);
+
+    for(unsigned char j = 0; j < 96; j++) {
+      FT_Load_Char(face, str[j], FT_LOAD_RENDER);
+
+      FT_Glyph_Metrics& m = face->glyph->metrics;
+      FT_Bitmap& bm = face->glyph->bitmap;
+      FT_Vector& ad = face->glyph->advance;
+
+      int met_height = m.height >> 6;
+      int met_width = m.width >> 6;
+
+      bits = new GLubyte[met_height * ((met_width + 7) / 8)]();
+
+      for(int y = 0; y < met_height; y++) {
+        // freetype and gl have opposite bitmap row orders
+        int yOff = (met_height - y - 1) * ((met_width + 7) / 8);
+
+        for(int x = 0; x < met_width; x++) {
+          if(bm.buffer[y * bm.width + x] > 127) {
+            bits[yOff + (x / 8)] |= (1 << (7 - (x % 8)));
+          }
+        }
+      }
+
+      glNewList(fonts[i].base_char + j, GL_COMPILE);
+      glBitmap(met_width, met_height,
+          -(m.horiBearingX / 64.0), (m.height - m.horiBearingY) / 64.0,
+          ad.x / 64.0, ad.y / 64.0,
+          bits);
+      glEndList();
+
+      delete[] bits;
+    }
+
+    if(del_face)
+      FT_Done_Face(face);
+  }
+
+  glPixelStorei(GL_UNPACK_ALIGNMENT, alignment);
+
+  FT_Done_FreeType(lib);
+
+  return true;
+}
+#endif /* !WINDOWS */
+
+/*-----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------*/
+
 void RenderInit (void)
 {
 
@@ -585,8 +762,8 @@ void RenderInit (void)
 	  DeleteObject(font);		
   }
 #else
-  Display     *dpy = WinGetDisplay();
-  XVisualInfo *vis = WinGetVisual();
+  Display      *dpy = WinGetDisplay();
+  XVisualInfo  *vis = WinGetVisual();
 
   if(!vis) {
     std::cerr << "huh? no visual has been set...\n";
@@ -599,6 +776,11 @@ void RenderInit (void)
   }
 
   glXMakeCurrent(dpy, WinGetWindow(), ctx);
+
+  if(!RenderLoadFonts(dpy, vis->visual)) {
+    std::cerr << "Couldn't load fonts...\n";
+    return;
+  }
 #endif
 
   //If the program is running for the first time, set the defaults.

@@ -18,10 +18,12 @@ OBJS := $(DEPS:.d=.o)
 	@$(CXX) -MM -MP -MF $@ $(CPPFLAGS) $<
 
 pixelcity: $(OBJS)
-	g++ -o $@ -g $(OBJS) -lm -lX11 -lGL -lGLU
+	g++ -o $@ -g $(OBJS) $(LDFLAGS) -lm -lX11 -lGL -lGLU
 
 CFLAGS=-Wall -pedantic -D_FILE_OFFSET_BITS=64 -g -O0
 CXXFLAGS=-Wall -pedantic -D_FILE_OFFSET_BITS=64 -g -O0
+CPPFLAGS=$(shell pkg-config --cflags fontconfig freetype2)
+LDFLAGS=$(shell pkg-config --libs fontconfig freetype2)
 
 clean:
 	rm -f *.o pixelcity
