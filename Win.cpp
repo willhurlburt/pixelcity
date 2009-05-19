@@ -891,7 +891,14 @@ bool WinInit (void)
 
   XParseColor(dpy, swa.colormap, "rgb:0/0/0", &black);
 
-  wnd = XCreateWindow(dpy, root, 0, 0, 640, 480, 0, vis->depth,
+  width = IniInt("WindowWidth");
+  height = IniInt("WindowHeight");
+  width = CLAMP(width, 800, 2048);
+  height = CLAMP(height, 600, 2048);
+  half_width = width / 2;
+  half_height = height / 2;
+
+  wnd = XCreateWindow(dpy, root, 0, 0, width, height, 0, vis->depth,
       InputOutput, vis->visual, CWEventMask | CWColormap, &swa);
 
   name.encoding = XA_STRING;
