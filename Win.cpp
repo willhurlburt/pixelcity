@@ -77,6 +77,8 @@ static Window      wnd;
 static Atom        del_atom;
 
 static Cursor      blank;
+static Atom        wm_state;
+static Atom        fullscreen;
 
 #define blank_width 8
 #define blank_height 8
@@ -876,6 +878,9 @@ bool WinInit (void)
     return false;
   }
 
+  wm_state = XInternAtom(dpy, "_NET_WM_STATE", False);
+  fullscreen = XInternAtom(dpy, "_NET_WM_STATE_FULLSCREEN", False);
+
   root = RootWindow(dpy, DefaultScreen(dpy));
 
   vis = glXChooseVisual(dpy, DefaultScreen(dpy), attrs);
@@ -891,15 +896,47 @@ bool WinInit (void)
 
   XParseColor(dpy, swa.colormap, "rgb:0/0/0", &black);
 
-  width = IniInt("WindowWidth");
-  height = IniInt("WindowHeight");
-  width = CLAMP(width, 800, 2048);
-  height = CLAMP(height, 600, 2048);
+  if(SCREENSAVER) {
+    XWindowAttributes rwa;
+    XGetWindowAttributes(dpy, root, &rwa);
+
+    swa.override_redirect = True;
+
+    width = rwa.width;
+    height = rwa.height;
+  }
+  else {
+    width = IniInt("WindowWidth");
+    height = IniInt("WindowHeight");
+    width = CLAMP(width, 800, 2048);
+    height = CLAMP(height, 600, 2048);
+  }
+
   half_width = width / 2;
   half_height = height / 2;
 
-  wnd = XCreateWindow(dpy, root, 0, 0, width, height, 0, vis->depth,
-      InputOutput, vis->visual, CWEventMask | CWColormap, &swa);
+  if(SCREENSAVER) {
+    wnd = XCreateWindow(dpy, root, 0, 0, width, height, 0, vis->depth,
+        InputOutput, vis->visual, CWEventMask | CWColormap | 
+        CWOverrideRedirect, &swa);
+
+    // For NET_WM compliant window managers.  override_redirect may not be
+    // required for them, but I can't test that...
+    memset(&event, 0, sizeof(event));
+    event.type = ClientMessage;
+    event.xclient.window = wnd;
+    event.xclient.message_type = wm_state;
+    event.xclient.format = 32;
+    event.xclient.data.l[0] = 1;  // add
+    event.xclient.data.l[1] = fullscreen;
+    event.xclient.data.l[2] = 0;
+
+    XSendEvent(dpy, root, False, SubstructureNotifyMask, &event);
+  }
+  else {
+    wnd = XCreateWindow(dpy, root, 0, 0, width, height, 0, vis->depth,
+        InputOutput, vis->visual, CWEventMask | CWColormap, &swa);
+  }
 
   name.encoding = XA_STRING;
   name.format = 8;  // bits per character
