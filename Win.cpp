@@ -80,6 +80,8 @@ static Cursor      blank;
 static Atom        wm_state;
 static Atom        fullscreen;
 
+static bool        frame_delay;
+
 #define blank_width 8
 #define blank_height 8
 #define blank_x_hot 0
@@ -539,7 +541,8 @@ static void handle_alarm(int signum)
   write(pipe_fds[1], "\0", 1);
 }
 
-static void SetupEventLoopSupport(int *x11_fd, int *fd_count, struct itimerval *tv)
+static void SetupEventLoopSupport(int *x11_fd, int *fd_count,
+    struct itimerval *tv, struct itimerval *tv0)
 {
   *x11_fd = ConnectionNumber(dpy);
   pipe(pipe_fds);
@@ -550,7 +553,12 @@ static void SetupEventLoopSupport(int *x11_fd, int *fd_count, struct itimerval *
   tv->it_interval.tv_usec = 16666;  /* 60 fps max */
   tv->it_value = tv->it_interval;
 
+  tv0->it_interval.tv_sec = tv0->it_interval.tv_usec = 0;
+  tv0->it_value = tv0->it_interval;
+
   signal(SIGALRM, handle_alarm);
+
+  frame_delay = true;
 }
 
 static void TeardownEventLoopSupport()
@@ -568,7 +576,7 @@ static void TeardownEventLoopSupport()
 int main()
 {
   XEvent report;
-  struct itimerval tv;
+  struct itimerval tv, tv0;
   int x11_fd, fd_count, rv;
   fd_set readfds;
   char buf[4096];
@@ -578,7 +586,7 @@ int main()
 
   AppInit();
 
-  SetupEventLoopSupport(&x11_fd, &fd_count, &tv);
+  SetupEventLoopSupport(&x11_fd, &fd_count, &tv, &tv0);
 
   /* Well, apparently if you don't call AppUpdate() fast enough during setup,
    * the program isn't able to properly build the bloom lighting texture (and
@@ -612,13 +620,20 @@ int main()
   setitimer(ITIMER_REAL, &tv, NULL);
 
   while (!quit) {
-    FD_ZERO(&readfds);
-    FD_SET(x11_fd, &readfds);
-    FD_SET(pipe_fds[0], &readfds);
+    bool temp_frame_delay = frame_delay;
+
+    if(temp_frame_delay) {
+      FD_ZERO(&readfds);
+      FD_SET(x11_fd, &readfds);
+      FD_SET(pipe_fds[0], &readfds);
+    }
 
     XFlush(dpy);
 
-    rv = select(fd_count + 1, &readfds, NULL, NULL, NULL);
+    if(temp_frame_delay)
+      rv = select(fd_count + 1, &readfds, NULL, NULL, NULL);
+    else
+      rv = 0;
 
     if(rv == -1 && errno == EINTR)
       continue;
@@ -631,17 +646,24 @@ int main()
       return 1;
     }
 
-    if(FD_ISSET(x11_fd, &readfds)) {
+    if(!temp_frame_delay || FD_ISSET(x11_fd, &readfds)) {
       while(XEventsQueued(dpy, QueuedAfterReading)) {
         XNextEvent(dpy, &report);
         WinHandleEvent(report);
       };
     }
 
-    if(FD_ISSET(pipe_fds[0], &readfds)) {
-      read(pipe_fds[0], buf, sizeof(buf));
+    if(!temp_frame_delay || FD_ISSET(pipe_fds[0], &readfds)) {
+      if(temp_frame_delay)
+        read(pipe_fds[0], buf, sizeof(buf));
 
       AppUpdate();
+    }
+
+    if(temp_frame_delay && !frame_delay) {
+      setitimer(ITIMER_REAL, &tv0, NULL);
+    } else if(!temp_frame_delay && frame_delay) {
+      setitimer(ITIMER_REAL, &tv, NULL);
     }
   }
 
@@ -701,6 +723,8 @@ static void WinHandleEvent(XEvent evt)
         RenderHelpToggle ();
       else if (key == XK_Escape)
         AppQuit();
+      else if (key == XK_d)
+        frame_delay = !frame_delay;
       else if (!SCREENSAVER) {
         //Dev mode keys
         if (key == XK_c)

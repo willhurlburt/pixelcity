@@ -97,6 +97,9 @@ static char             help[] =
   "E   - Change full-scene effects\n"
   "T   - Toggle Textures\n"
   "G   - Toggle Fog\n"
+#ifndef WINDOWS
+  "D   - Toggle Frame Delay\n"
+#endif
 ;
 
 struct glFont
