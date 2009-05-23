@@ -154,8 +154,6 @@ static void CenterCursor ()
   center_y = rect.top + (rect.bottom - rect.top) / 2;
   SetCursorPos (center_x, center_y);
 #else
-  mouse_forced = true;
-
   XWarpPointer(dpy, None, wnd, 0, 0, 0, 0, width / 2, height / 2);
   XFlush(dpy);
 #endif
@@ -181,8 +179,6 @@ static void MoveCursor (int x, int y)
   center_y = rect.top + y;
   SetCursorPos (center_x, center_y);
 #else
-  mouse_forced = true;
-
   XWarpPointer(dpy, None, wnd, 0, 0, 0, 0, x, y);
   XFlush(dpy);
 #endif
@@ -656,6 +652,8 @@ int main()
   return 0;
 }
 
+#define MOUSE_FUDGE 16
+
 static void WinHandleEvent(XEvent evt)
 {
   POINT p;
@@ -749,6 +747,11 @@ static void WinHandleEvent(XEvent evt)
       if(!lmb && !rmb) {
         XUngrabPointer(dpy, evt.xbutton.time);
         MoveCursor(select_pos.x, select_pos.y);
+
+        /* Don't bother going through the contortions we go through below
+         * after calling CenterCursor(), since we know that all the mouse
+         * buttons have been released.  The code in MotionNotify that
+         * manipulates the camera won't run here... */
       }
       break;
     case MotionNotify:
@@ -756,17 +759,11 @@ static void WinHandleEvent(XEvent evt)
       p.y = evt.xmotion.y;
       buttons = evt.xmotion.state & (Button1Mask | Button3Mask);
 
-      if (p.x < 0 || p.x > width)
-        break;
-      if (p.y < 0 || p.y > height)
-        break;
-
       if (!mouse_forced && !buttons) {
         select_pos = p; 
       } else if (mouse_forced) {
         mouse_forced = false;
       } else /* buttons */ {
-        CenterCursor ();
         delta_x = (float)(mouse_pos.x - p.x) * MOUSE_MOVEMENT;
         delta_y = (float)(mouse_pos.y - p.y) * MOUSE_MOVEMENT;
 
@@ -787,6 +784,38 @@ static void WinHandleEvent(XEvent evt)
           angle.x += delta_y;
 
           CameraAngleSet(angle);
+        }
+
+        if((p.x > width - MOUSE_FUDGE) ||
+            (p.x < MOUSE_FUDGE) ||
+            (p.y > height - MOUSE_FUDGE) ||
+            (p.y < MOUSE_FUDGE)) {
+          CenterCursor();
+
+          /* now eat MotionNotify events until we get one with a position
+           * "close" to what we warped to in CenterCursor()
+           * yeah, this means we end up stalling the render pipeline,
+           * and if this never happens, we might overflow the self-pipe
+           * too.  *shrug*  if only x11 gave us an indication that a
+           * given MotionNotify came from an XWarpPointer call... */
+
+          while(1) {
+            // might as well reuse evt
+            XMaskEvent(dpy, PointerMotionMask, &evt);
+
+            if((evt.xmotion.x > half_width - MOUSE_FUDGE) &&
+                (evt.xmotion.x < half_width + MOUSE_FUDGE) &&
+                (evt.xmotion.y > half_height - MOUSE_FUDGE) &&
+                (evt.xmotion.y < half_height + MOUSE_FUDGE)) {
+              /* reset p, so mouse_pos below gets reset, so we don't
+               * interpret this giant motion next time through this
+               * function... */
+              p.x = evt.xmotion.x;
+              p.y = evt.xmotion.y;
+
+              break;
+            }
+          }
         }
       }
 
@@ -869,6 +898,7 @@ bool WinInit (void)
   Window root;
   XColor black;
   XTextProperty name;
+  int x, y;
   unsigned char str_name[] = APP_TITLE;
 
   dpy = XOpenDisplay(NULL);  // use $DISPLAY
@@ -902,10 +932,12 @@ bool WinInit (void)
 
     swa.override_redirect = True;
 
+    x = y = 0;
     width = rwa.width;
     height = rwa.height;
-  }
-  else {
+  } else {
+    x = IniInt("WindowX");
+    y = IniInt("WindowY");
     width = IniInt("WindowWidth");
     height = IniInt("WindowHeight");
     width = CLAMP(width, 800, 2048);
@@ -916,7 +948,7 @@ bool WinInit (void)
   half_height = height / 2;
 
   if(SCREENSAVER) {
-    wnd = XCreateWindow(dpy, root, 0, 0, width, height, 0, vis->depth,
+    wnd = XCreateWindow(dpy, root, x, y, width, height, 0, vis->depth,
         InputOutput, vis->visual, CWEventMask | CWColormap | 
         CWOverrideRedirect, &swa);
 
@@ -932,9 +964,8 @@ bool WinInit (void)
     event.xclient.data.l[2] = 0;
 
     XSendEvent(dpy, root, False, SubstructureNotifyMask, &event);
-  }
-  else {
-    wnd = XCreateWindow(dpy, root, 0, 0, width, height, 0, vis->depth,
+  } else {
+    wnd = XCreateWindow(dpy, root, x, y, width, height, 0, vis->depth,
         InputOutput, vis->visual, CWEventMask | CWColormap, &swa);
   }
 
