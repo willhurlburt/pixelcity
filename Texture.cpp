@@ -413,16 +413,16 @@ void CTexture::DrawWindows ()
 
 
   int         x, y;
-  int         run;
-  int         run_length;
-  int         lit_density;
+  int         run = 0;
+  int         run_length = RandomVal(9) + 2;
+  int         lit_density = 2 + RandomVal(2) + RandomVal(2);
   GLrgba      color;
-  bool        lit;
+  bool        lit = false;
 
   //color = glRgbaUnique (_my_id);
   for (y = 0; y < SEGMENTS_PER_TEXTURE; y++)  {
     //Every few floors we change the behavior
-    if (!(y % 8)) {
+    if (!(y % 8) && y>0) {
       run = 0;
       run_length = RandomVal (9) + 2;
       lit_density = 2 + RandomVal(2) + RandomVal(2);

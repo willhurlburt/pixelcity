@@ -373,6 +373,8 @@ static int build_light_strip (int x1, int z1, int direction)
     dir_z = 0; dir_x = 1;break;
   case WEST:
     dir_z = 0; dir_x = 1;break;
+  default:
+    return 0;
   }
   //So we know we're on the corner of an intersection
   //look in the given  until we reach the end of the sidewalk
@@ -417,7 +419,7 @@ static void do_reset (void)
   bool      road_left, road_right;
   GLrgba    light_color;
   GLrgba    building_color;
-  float     west_street, north_street, east_street, south_street;
+  float     west_street=0.0f, north_street=0.0f, east_street=0.0f, south_street=0.0f;
 
   //Re-init Random to make the same city each time. Helpful when running tests.
   //RandomInit (6);

@@ -105,6 +105,7 @@ GLrgba glRgbaAdd (GLrgba c1, GLrgba c2)
   result.red = c1.red + c2.red;
   result.green = c1.green + c2.green;
   result.blue = c1.blue + c2.blue;
+  result.alpha = c1.alpha;
   return result;
 
 }
@@ -121,6 +122,7 @@ GLrgba glRgbaSubtract (GLrgba c1, GLrgba c2)
   result.red = c1.red - c2.red;
   result.green = c1.green - c2.green;
   result.blue = c1.blue - c2.blue;
+  result.alpha = 1.0f;
   return result;
 
 }
@@ -138,6 +140,7 @@ GLrgba glRgbaMultiply (GLrgba c1, GLrgba c2)
   result.red = c1.red * c2.red;
   result.green = c1.green * c2.green;
   result.blue = c1.blue * c2.blue;
+  result.alpha = 1.0f;
   return result;
 
 }

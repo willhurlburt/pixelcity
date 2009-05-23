@@ -257,7 +257,7 @@ void CBuilding::ConstructRoof (float left, float right, float front, float back,
   int       i;
   int       width, depth, height;
   int       face;
-  int       addon;
+  int       addon = ADDON_NONE;
   int       max_tiers;
   float     ac_x;
   float     ac_y;
@@ -426,6 +426,8 @@ float CBuilding::ConstructWall (int start_x, int start_y, int start_z, int direc
     step_z = -1; step_x = 0; break;
   case EAST:
     step_z = 0; step_x = 1; break;
+  default:
+    return 0.0f;
   }
   x = start_x;;
   z = start_z;
