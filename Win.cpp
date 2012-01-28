@@ -14,6 +14,7 @@
 
 #ifdef _WINDOWS
 #include <windows.h>
+#pragma comment (lib, "comctl32")
 #else
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
