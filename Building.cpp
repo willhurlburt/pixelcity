@@ -12,7 +12,7 @@
 
 #define MAX_VBUFFER         256
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #include <windows.h>
 #endif
 

@@ -16,7 +16,7 @@
 
 #define MAX_SIZE            5
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #include <windows.h>
 #endif
 

@@ -21,7 +21,7 @@
 #define CAMERA_CHANGE_INTERVAL  15
 #define CAMERA_CYCLE_LENGTH     (CAMERA_MODES*CAMERA_CHANGE_INTERVAL)
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #include <windows.h>
 #endif
 

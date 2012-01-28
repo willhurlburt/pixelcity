@@ -22,7 +22,7 @@
 #define FONT_SIZE           (LOGO_PIXELS - LOGO_PIXELS / 8)
 #define BLOOM_SCALING       0.07f
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #include <windows.h>
 #endif
 
@@ -36,7 +36,7 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#ifndef WINDOWS
+#ifndef _WINDOWS
 #include <X11/Xlib.h>
 #include <GL/glx.h>
 
@@ -63,7 +63,7 @@
 #include "Win.h"
 #include "time_util.h"
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 static	PIXELFORMATDESCRIPTOR pfd =			
 {
 	sizeof(PIXELFORMATDESCRIPTOR),			
@@ -143,7 +143,7 @@ enum
 };
 #endif 
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 static HDC			        hDC;
 static HGLRC		        hRC;
 #else
@@ -538,7 +538,7 @@ void RenderResize (void)
 void RenderTerm (void)
 {
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
   if (!hRC)
     return;
   wglDeleteContext (hRC);
@@ -560,7 +560,7 @@ void RenderTerm (void)
 
 -----------------------------------------------------------------------------*/
 
-#ifndef WINDOWS
+#ifndef _WINDOWS
 
 static bool RenderLoadFonts(Display *dpy, Visual *vis)
 {
@@ -728,7 +728,7 @@ static bool RenderLoadFonts(Display *dpy, Visual *vis)
 void RenderInit (void)
 {
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
   HWND              hWnd;
 	unsigned		      PixelFormat;
   HFONT	            font;		
@@ -798,7 +798,7 @@ void RenderInit (void)
   glClearColor (0.0f, 0.0f, 0.0f, 1.0f);
   glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
   SwapBuffers (hDC);
 #else
   glFlush();
@@ -995,7 +995,7 @@ void RenderUpdate (void)
     glViewport (0, letterbox_offset, render_width, render_height);
   if (LOADING_SCREEN && TextureReady () && !EntityReady ()) {
     do_effects (EFFECT_NONE);
-#ifdef WINDOWS
+#ifdef _WINDOWS
     SwapBuffers (hDC);
 #else
     glXSwapBuffers(WinGetDisplay(), WinGetWindow());
@@ -1075,7 +1075,7 @@ void RenderUpdate (void)
   if (show_help)
     do_help ();
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
   SwapBuffers (hDC);
 #else
   glXSwapBuffers(WinGetDisplay(), WinGetWindow());

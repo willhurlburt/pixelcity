@@ -14,7 +14,7 @@
 
 #define SKYPOINTS      24
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #include <windows.h>
 #endif
 

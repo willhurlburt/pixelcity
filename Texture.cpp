@@ -23,7 +23,7 @@
 #define SUFFIX_COUNT        (sizeof (suffix) / sizeof (char*))
 #define NAME_COUNT          (sizeof (name) / sizeof (char*))
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #include <windows.h>
 #endif
 

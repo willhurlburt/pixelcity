@@ -13,7 +13,7 @@
 
 #define LOGO_OFFSET           0.2f //How far a logo sticks out from the given surface
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #include <windows.h>
 #endif
 

@@ -144,6 +144,7 @@
     <ClCompile Include="Render.cpp" />
     <ClCompile Include="Sky.cpp" />
     <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="time_util.c" />
     <ClCompile Include="Visible.cpp" />
     <ClCompile Include="Win.cpp" />
     <ClCompile Include="World.cpp" />
@@ -164,6 +165,7 @@
     <ClInclude Include="Render.h" />
     <ClInclude Include="Sky.h" />
     <ClInclude Include="Texture.h" />
+    <ClInclude Include="time_util.h" />
     <ClInclude Include="Visible.h" />
     <ClInclude Include="Win.h" />
     <ClInclude Include="World.h" />

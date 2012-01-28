@@ -17,7 +17,7 @@
 #define MAX_RESULT          256
 #define FORMAT_FLOAT        "%1.2f"
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #define INI_FILE            ".\\" APP ".ini"
 #else
 #define INI_FILE            "./" APP ".ini"
@@ -25,7 +25,7 @@
 
 #define SECTION             "Settings"
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #include <windows.h>
 #else
 #include <string>
@@ -41,7 +41,7 @@
 
 static char                 result[MAX_RESULT];
 
-#ifndef WINDOWS
+#ifndef _WINDOWS
 // Windows provides nice {Get,Set}PrivateProfile[type] functions.  Emulate them.
 
 // We'll be doing lots of gets.  Build this map the first time it's needed.
@@ -124,7 +124,7 @@ static void SetConfFileEntry(const std::string& entry, const T& value)
 int IniInt (const char* entry)
 {
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
   int         result;
 
   result = GetPrivateProfileInt (SECTION, entry, 0, INI_FILE);
@@ -142,7 +142,7 @@ int IniInt (const char* entry)
 void IniIntSet (const char* entry, int val)
 {
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
   char        buf[20];
 
   sprintf (buf, "%d", val);
@@ -160,7 +160,7 @@ void IniIntSet (const char* entry, int val)
 float IniFloat (const char* entry)
 {
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
   float     f;
 
   GetPrivateProfileString (SECTION, entry, "", result, MAX_RESULT, INI_FILE);
@@ -179,7 +179,7 @@ float IniFloat (const char* entry)
 void IniFloatSet (const char* entry, float val)
 {
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
   char        buf[20];
   
   sprintf (buf, FORMAT_FLOAT, val);
@@ -198,7 +198,7 @@ void IniFloatSet (const char* entry, float val)
 char* IniString (const char* entry)
 {
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
   GetPrivateProfileString (SECTION, entry, "", result, MAX_RESULT, INI_FILE);
   return result;
 #else
@@ -220,7 +220,7 @@ char* IniString (const char* entry)
 void IniStringSet (const char* entry, char* val)
 {
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
   WritePrivateProfileString (SECTION, entry, val, INI_FILE);
 #else
   SetConfFileEntry<std::string>(entry, val);
@@ -236,7 +236,7 @@ void IniStringSet (const char* entry, char* val)
 void IniVectorSet (const char* entry, GLvector v)
 {
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
   sprintf (result, FORMAT_VECTOR, v.x, v.y, v.z);
   WritePrivateProfileString (SECTION, entry, result, INI_FILE);
 #else
@@ -252,7 +252,7 @@ void IniVectorSet (const char* entry, GLvector v)
 GLvector IniVector (const char* entry)
 {
 
-#if WINDOWS
+#if _WINDOWS
   GLvector  v;
 
   v.x = v.y = v.z = 0.0f;

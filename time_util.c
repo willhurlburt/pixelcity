@@ -1,4 +1,4 @@
-#ifdef WINDOWS
+#ifdef _WINDOWS
 # include <windows.h>
 #else
 # include <sys/time.h>
@@ -9,7 +9,7 @@
 
 int GetTimeInMillis()
 {
-#ifdef WINDOWS
+#ifdef _WINDOWS
   return GetTickCount();
 #else
   struct timeval tv;

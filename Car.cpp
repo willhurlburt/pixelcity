@@ -16,7 +16,7 @@
 #define MOVEMENT_SPEED  0.61f
 #define CAR_SIZE        3.0f
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #include <windows.h>
 #endif
 

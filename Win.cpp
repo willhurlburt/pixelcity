@@ -12,7 +12,7 @@
 
 #define MOUSE_MOVEMENT          0.5f
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #include <windows.h>
 #else
 #include <X11/Xlib.h>
@@ -35,7 +35,7 @@
 #include <stdio.h>
 #include <time.h>
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #include <scrnsave.h>
 #endif
 
@@ -52,7 +52,7 @@
 #include "World.h"
 #include "Visible.h"
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #pragma comment (lib, "opengl32.lib")
 #pragma comment (lib, "winmm.lib")
 #pragma comment (lib, "glu32.lib")
@@ -62,7 +62,7 @@
 #endif
 
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 static HWND         hwnd;
 static HINSTANCE    module;
 #else
@@ -112,7 +112,7 @@ static POINT        select_pos;
 static POINT        mouse_pos;
 static bool         quit;
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 
 static HINSTANCE    instance;
 
@@ -144,7 +144,7 @@ Window WinGetWindow()
 static void CenterCursor ()
 {
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
   int             center_x;
   int             center_y;
   RECT            rect;
@@ -169,7 +169,7 @@ static void CenterCursor ()
 static void MoveCursor (int x, int y)
 {
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
   int             center_x;
   int             center_y;
   RECT            rect;
@@ -191,7 +191,7 @@ static void MoveCursor (int x, int y)
                                     n o t e
 -----------------------------------------------------------------------------*/
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 void WinPopup (char* message, ...)
 {
 
@@ -248,7 +248,7 @@ int WinHeight (void)
 
 void WinTerm (void)
 {
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #if !SCREENAVER
   DestroyWindow (hwnd);
 #endif
@@ -264,7 +264,7 @@ void WinTerm (void)
 
 -----------------------------------------------------------------------------*/
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 HWND WinHwnd (void)
 {
 
@@ -333,7 +333,7 @@ void AppTerm (void)
 
 }
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 /*-----------------------------------------------------------------------------
                                 W i n M a i n
 -----------------------------------------------------------------------------*/
@@ -867,7 +867,7 @@ static Bool WaitForNotify(Display *dpy, XEvent *event, XPointer arg) {
 bool WinInit (void)
 {
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 
   WNDCLASSEX    wcex;
   int           x, y;

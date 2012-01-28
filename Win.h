@@ -1,4 +1,4 @@
-#ifdef WINDOWS
+#ifdef _WINDOWS
 #include <windows.h>
 #else
 #include <X11/Xlib.h>
@@ -48,7 +48,7 @@ enum
   WEST
 };
 
-#ifdef WINDOWS
+#ifdef _WINDOWS
 HWND  WinHwnd (void);
 void  WinPopup (char* message, ...);
 #else
